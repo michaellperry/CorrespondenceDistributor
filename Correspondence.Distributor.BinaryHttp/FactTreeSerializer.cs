@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UpdateControls.Correspondence.Mementos;
+using UpdateControls.Correspondence;
 using UpdateControls.Correspondence.FieldSerializer;
-using System.Collections.Generic;
+using UpdateControls.Correspondence.Mementos;
 
-namespace UpdateControls.Correspondence.BinaryHTTPClient
+namespace Correspondence.Distributor.BinaryHttp
 {
     public class FactTreeSerializer
     {

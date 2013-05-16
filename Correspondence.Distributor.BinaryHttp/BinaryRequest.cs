@@ -1,10 +1,11 @@
-using System.Collections.Generic;
-using UpdateControls.Correspondence.Mementos;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using UpdateControls.Correspondence;
 using UpdateControls.Correspondence.FieldSerializer;
+using UpdateControls.Correspondence.Mementos;
 
-namespace UpdateControls.Correspondence.BinaryHTTPClient
+namespace Correspondence.Distributor.BinaryHttp
 {
     public abstract class BinaryRequest
     {

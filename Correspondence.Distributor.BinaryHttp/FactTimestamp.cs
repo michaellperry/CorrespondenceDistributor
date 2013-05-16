@@ -1,5 +1,5 @@
 
-namespace UpdateControls.Correspondence.BinaryHTTPClient
+namespace Correspondence.Distributor.BinaryHttp
 {
     public class FactTimestamp
     {

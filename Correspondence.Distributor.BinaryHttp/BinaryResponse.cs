@@ -4,11 +4,11 @@ using System.IO;
 using UpdateControls.Correspondence.FieldSerializer;
 using UpdateControls.Correspondence.Mementos;
 
-namespace UpdateControls.Correspondence.BinaryHTTPClient
+namespace Correspondence.Distributor.BinaryHttp
 {
     public abstract class BinaryResponse
     {
-        public static byte Version = 1;
+        public static byte Version = 2;
 
         public void Write(BinaryWriter requestWriter)
         {
