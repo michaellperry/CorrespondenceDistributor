@@ -89,7 +89,16 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Correspondence.Distributor.BinaryHttp\Correspondence.Distributor.BinaryHttp.csproj">
+      <Project>{76f4a690-0bd2-429d-aac5-5fc2d10ca70b}</Project>
+      <Name>Correspondence.Distributor.BinaryHttp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Correspondence.Distributor\Correspondence.Distributor.csproj">
+      <Project>{f76ae044-785d-4612-98be-8feb4a4de4c5}</Project>
+      <Name>Correspondence.Distributor</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
