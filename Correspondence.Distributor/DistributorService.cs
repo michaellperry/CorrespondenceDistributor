@@ -58,7 +58,7 @@ namespace Correspondence.Distributor
             FactTreeMemento factTree,
             List<UnpublishMemento> unpublishMessages)
         {
-            throw new NotImplementedException();
+            ForEachFact(factTree, fact => _repository.Save(fact));
         }
 
         public void Interrupt(
@@ -100,13 +100,19 @@ namespace Correspondence.Distributor
 
         private Dictionary<FactID, FactID> FindExistingFacts(FactTreeMemento pivotTree)
         {
+            return ForEachFact(pivotTree, fact =>
+                _repository.FindExistingFact(fact));
+        }
+
+        private static Dictionary<FactID, FactID> ForEachFact(FactTreeMemento tree, Func<FactMemento, FactID?> processFact)
+        {
             Dictionary<FactID, FactID> localIdByRemoteId = new Dictionary<FactID, FactID>();
-            foreach (IdentifiedFactMemento identifiedFact in pivotTree.Facts)
+            foreach (IdentifiedFactMemento identifiedFact in tree.Facts)
             {
                 FactMemento translatedMemento = TranslateMemento(localIdByRemoteId, identifiedFact);
                 if (translatedMemento != null)
                 {
-                    FactID? localId = _repository.FindExistingFact(translatedMemento);
+                    FactID? localId = processFact(translatedMemento);
                     if (localId != null)
                     {
                         localIdByRemoteId.Add(identifiedFact.Id, localId.Value);
@@ -133,7 +139,15 @@ namespace Correspondence.Distributor
 
         private void AddToFactTree(FactTreeMemento messageBody, FactID factId, Dictionary<FactID, FactID> localIdByRemoteId)
         {
-            if (!messageBody.Contains(factId))
+            var remoteId = localIdByRemoteId
+                .Where(pair => pair.Value.Equals(factId))
+                .Select(pair => (FactID?)pair.Key)
+                .FirstOrDefault();
+            if (remoteId != null)
+            {
+                messageBody.Add(new IdentifiedFactRemote(factId, remoteId.Value));
+            }
+            else if (!messageBody.Contains(factId))
             {
                 FactMemento fact = _repository.Load(factId);
                 foreach (PredecessorMemento predecessor in fact.Predecessors)

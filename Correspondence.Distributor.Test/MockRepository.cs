@@ -28,6 +28,13 @@ namespace Correspondence.Distributor.Test
             return _memory.Load(factId);
         }
 
+        public FactID Save(FactMemento fact)
+        {
+            FactID factId;
+            _memory.Save(fact, 0, out factId);
+            return factId;
+        }
+
         public FactID? FindExistingFact(FactMemento translatedMemento)
         {
             FactID factId;
