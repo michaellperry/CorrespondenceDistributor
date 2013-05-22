@@ -24,21 +24,38 @@ namespace Correspondence.Distributor.Web
 
         public void ProcessRequest(HttpContext context)
         {
-            var reader = new BinaryReader(context.Request.InputStream);
+            if (context.Request.HttpMethod == "POST")
+                Post(context.Request, context.Response);
+            else if (context.Request.HttpMethod == "GET")
+                Get(context.Response);
+        }
+
+        private void Post(HttpRequest httpRequest, HttpResponse httpResponse)
+        {
+            var reader = new BinaryReader(httpRequest.InputStream);
             BinaryRequest request = BinaryRequest.Read(reader);
 
             BinaryResponse response =
-                TryHandle<GetManyRequest>           (request, GetMany) ??
-                TryHandle<PostRequest>              (request, Post) ??
-                TryHandle<InterruptRequest>         (request, Interrupt) ??
-                TryHandle<NotifyRequest>            (request, Notify) ??
-                TryHandle<WindowsSubscribeRequest>  (request, WindowsSubscribe) ??
+                TryHandle<GetManyRequest>(request, GetMany) ??
+                TryHandle<PostRequest>(request, Post) ??
+                TryHandle<InterruptRequest>(request, Interrupt) ??
+                TryHandle<NotifyRequest>(request, Notify) ??
+                TryHandle<WindowsSubscribeRequest>(request, WindowsSubscribe) ??
                 TryHandle<WindowsUnsubscribeRequest>(request, WindowsUnsubscribe);
             if (response == null)
                 throw new CorrespondenceException(String.Format("Unknown request type {0}.", request));
-            var writer = new BinaryWriter(context.Response.OutputStream);
-            response.Write(writer);
-            writer.Flush();
+            using (var writer = new BinaryWriter(httpResponse.OutputStream))
+            {
+                response.Write(writer);
+            }
+        }
+
+        private void Get(HttpResponse httpResponse)
+        {
+            using (var writer = new StreamWriter(httpResponse.OutputStream))
+            {
+                writer.Write("<html><head><title>Correspondence Distributor</title></head><body><h1>Correspondence Distributor</h1></body></html>");
+            }
         }
 
         private BinaryResponse TryHandle<TRequest>(BinaryRequest request, Func<TRequest, BinaryResponse> method)

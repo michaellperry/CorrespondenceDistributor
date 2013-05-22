@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6BADD1F3-4CCC-494D-B9D1-53A61A5E0EA3}</ProjectGuid>
+    <ProjectGuid>{82560DA7-1D1D-4FFC-803A-C4128E73E5E2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Correspondence.Distributor.BinaryHttp.Test</RootNamespace>
-    <AssemblyName>Correspondence.Distributor.BinaryHttp.Test</AssemblyName>
+    <RootNamespace>Correspondence.Distributor.Test</RootNamespace>
+    <AssemblyName>Correspondence.Distributor.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -82,17 +82,18 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="SerializationTests.cs" />
+    <Compile Include="DistributorServiceTests.cs" />
+    <Compile Include="MockRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\Correspondence.Distributor\Correspondence.Distributor.csproj">
+      <Project>{f76ae044-785d-4612-98be-8feb4a4de4c5}</Project>
+      <Name>Correspondence.Distributor</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Correspondence.Distributor.BinaryHttp\Correspondence.Distributor.BinaryHttp.csproj">
-      <Project>{76f4a690-0bd2-429d-aac5-5fc2d10ca70b}</Project>
-      <Name>Correspondence.Distributor.BinaryHttp</Name>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
