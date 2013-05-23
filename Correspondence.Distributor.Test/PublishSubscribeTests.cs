@@ -7,7 +7,7 @@ using System.Linq;
 namespace Correspondence.Distributor.Test
 {
     [TestClass]
-    public class DistributorServiceTests
+    public class PublishSubscribeTests
     {
         private static readonly CorrespondenceFactType TypeDomain =
             new CorrespondenceFactType("TestModel.Domain", 1);
@@ -101,6 +101,29 @@ namespace Correspondence.Distributor.Test
             Assert.AreEqual(9898, resultDomain.RemoteId.key);
             Assert.AreEqual(TypeRoom, resultRoom.Memento.FactType);
             Assert.AreEqual(resultDomain.Id, resultRoom.Memento.Predecessors.ElementAt(0).ID);
+        }
+
+        [TestMethod]
+        public void SkipsFactsToSourceClient()
+        {
+            FactTreeMemento postTree = new FactTreeMemento(0);
+            postTree.Add(new IdentifiedFactMemento(
+                new FactID { key = 3961 },
+                CreateDomain()));
+            postTree.Add(new IdentifiedFactMemento(
+                new FactID { key = 4979 },
+                CreateRoom(3961)));
+            _service.Post("clientGuid1", "domain", postTree, new List<UnpublishMemento>());
+
+            FactTreeMemento getTree = new FactTreeMemento(0);
+            getTree.Add(new IdentifiedFactMemento(
+                new FactID { key = 9898 },
+                CreateDomain()));
+            Dictionary<long, long> pivotIds = new Dictionary<long, long>();
+            pivotIds[9898] = 0;
+            var result = _service.GetMany("clientGuid1", "domain", getTree, pivotIds, 30);
+
+            Assert.AreEqual(0, result.Facts.Count());
         }
 
         private long AddDomain()

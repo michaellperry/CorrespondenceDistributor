@@ -10,6 +10,7 @@ namespace Correspondence.Distributor.Test
     public class MockRepository : IRepository
     {
         private MemoryStorageStrategy _memory;
+        private Dictionary<FactID, string> _sourceByFact = new Dictionary<FactID, string>();
 
         public MockRepository()
         {
@@ -28,10 +29,12 @@ namespace Correspondence.Distributor.Test
             return _memory.Load(factId);
         }
 
-        public FactID Save(FactMemento fact)
+        public FactID Save(FactMemento fact, string clientGuid)
         {
             FactID factId;
-            _memory.Save(fact, 0, out factId);
+            bool saved = _memory.Save(fact, 0, out factId);
+            if (saved)
+                _sourceByFact.Add(factId, clientGuid);
             return factId;
         }
 
@@ -44,11 +47,20 @@ namespace Correspondence.Distributor.Test
             return factId;
         }
 
-        public List<FactID> LoadRecentMessages(FactID localPivotId, TimestampID timestamp)
+        public List<FactID> LoadRecentMessages(FactID localPivotId, string clientGuid, TimestampID timestamp)
         {
             return _memory
                 .LoadRecentMessagesForClient(localPivotId, timestamp)
+                .Where(id => IsNotForClient(id, clientGuid))
                 .ToList();
+        }
+
+        private bool IsNotForClient(FactID id, string clientGuid)
+        {
+            string sourceClientGuid;
+            if (!_sourceByFact.TryGetValue(id, out sourceClientGuid))
+                return true;
+            return sourceClientGuid != clientGuid;
         }
     }
 }

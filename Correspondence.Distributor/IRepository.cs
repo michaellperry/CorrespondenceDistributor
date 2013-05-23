@@ -9,8 +9,8 @@ namespace Correspondence.Distributor
     public interface IRepository
     {
         FactMemento Load(FactID factId);
-        FactID Save(FactMemento fact);
+        FactID Save(FactMemento fact, string clientGuid);
         FactID? FindExistingFact(FactMemento fact);
-        List<FactID> LoadRecentMessages(FactID pivotId, TimestampID timestamp);
+        List<FactID> LoadRecentMessages(FactID pivotId, string clientGuid, TimestampID timestamp);
     }
 }

@@ -35,7 +35,7 @@ namespace Correspondence.Distributor
                 TimestampID timestamp = new TimestampID(0, pivotValue);
                 if (localIdByRemoteId.TryGetValue(new FactID { key = pivotId }, out localPivotId))
                 {
-                    List<FactID> recentMessages = _repository.LoadRecentMessages(localPivotId, timestamp);
+                    List<FactID> recentMessages = _repository.LoadRecentMessages(localPivotId, clientGuid, timestamp);
                     foreach (FactID recentMessage in recentMessages)
                     {
                         AddToFactTree(messageBody, recentMessage, localIdByRemoteId);
@@ -58,7 +58,7 @@ namespace Correspondence.Distributor
             FactTreeMemento factTree,
             List<UnpublishMemento> unpublishMessages)
         {
-            ForEachFact(factTree, fact => _repository.Save(fact));
+            ForEachFact(factTree, fact => _repository.Save(fact, clientGuid));
         }
 
         public void Interrupt(

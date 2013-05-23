@@ -82,7 +82,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="DistributorServiceTests.cs" />
+    <Compile Include="PublishSubscribeTests.cs" />
     <Compile Include="MockRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
