@@ -25,7 +25,7 @@ namespace Correspondence.Distributor
             int timeoutSeconds)
         {
             FactTreeMemento messageBody = new FactTreeMemento(0);
-            Dictionary<FactID, FactID> localIdByRemoteId = FindExistingFacts(pivotTree);
+            Dictionary<FactID, FactID> localIdByRemoteId = FindExistingFacts(domain, pivotTree);
             Dictionary<long, long> newPivotIds = new Dictionary<long, long>();
             foreach (var pivot in pivotIds)
             {
@@ -35,10 +35,10 @@ namespace Correspondence.Distributor
                 TimestampID timestamp = new TimestampID(0, pivotValue);
                 if (localIdByRemoteId.TryGetValue(new FactID { key = pivotId }, out localPivotId))
                 {
-                    List<FactID> recentMessages = _repository.LoadRecentMessages(localPivotId, clientGuid, timestamp);
+                    List<FactID> recentMessages = _repository.LoadRecentMessages(domain, localPivotId, clientGuid, timestamp);
                     foreach (FactID recentMessage in recentMessages)
                     {
-                        AddToFactTree(messageBody, recentMessage, localIdByRemoteId);
+                        AddToFactTree(domain, messageBody, recentMessage, localIdByRemoteId);
                         if (recentMessage.key > pivotValue)
                             pivotValue = recentMessage.key;
                     }
@@ -58,7 +58,7 @@ namespace Correspondence.Distributor
             FactTreeMemento factTree,
             List<UnpublishMemento> unpublishMessages)
         {
-            ForEachFact(factTree, fact => _repository.Save(fact, clientGuid));
+            ForEachFact(factTree, fact => _repository.Save(domain, fact, clientGuid));
         }
 
         public void Interrupt(
@@ -98,10 +98,10 @@ namespace Correspondence.Distributor
             throw new NotImplementedException();
         }
 
-        private Dictionary<FactID, FactID> FindExistingFacts(FactTreeMemento pivotTree)
+        private Dictionary<FactID, FactID> FindExistingFacts(string domain, FactTreeMemento pivotTree)
         {
             return ForEachFact(pivotTree, fact =>
-                _repository.FindExistingFact(fact));
+                _repository.FindExistingFact(domain, fact));
         }
 
         private static Dictionary<FactID, FactID> ForEachFact(FactTreeMemento tree, Func<FactMemento, FactID?> processFact)
@@ -137,7 +137,7 @@ namespace Correspondence.Distributor
             return translatedMemento;
         }
 
-        private void AddToFactTree(FactTreeMemento messageBody, FactID factId, Dictionary<FactID, FactID> localIdByRemoteId)
+        private void AddToFactTree(string domain, FactTreeMemento messageBody, FactID factId, Dictionary<FactID, FactID> localIdByRemoteId)
         {
             var remoteId = localIdByRemoteId
                 .Where(pair => pair.Value.Equals(factId))
@@ -149,9 +149,9 @@ namespace Correspondence.Distributor
             }
             else if (!messageBody.Contains(factId))
             {
-                FactMemento fact = _repository.Load(factId);
+                FactMemento fact = _repository.Load(domain, factId);
                 foreach (PredecessorMemento predecessor in fact.Predecessors)
-                    AddToFactTree(messageBody, predecessor.ID, localIdByRemoteId);
+                    AddToFactTree(domain, messageBody, predecessor.ID, localIdByRemoteId);
                 messageBody.Add(new IdentifiedFactMemento(factId, fact));
             }
         }

@@ -17,19 +17,19 @@ namespace Correspondence.Distributor.Test
             _memory = new MemoryStorageStrategy();
         }
 
-        public long AddFact(FactMemento fact)
+        public long AddFact(string domain, FactMemento fact)
         {
             FactID factId;
             _memory.Save(fact, 0, out factId);
             return factId.key;
         }
 
-        public FactMemento Load(FactID factId)
+        public FactMemento Load(string domain, FactID factId)
         {
             return _memory.Load(factId);
         }
 
-        public FactID Save(FactMemento fact, string clientGuid)
+        public FactID Save(string domain, FactMemento fact, string clientGuid)
         {
             FactID factId;
             bool saved = _memory.Save(fact, 0, out factId);
@@ -38,7 +38,7 @@ namespace Correspondence.Distributor.Test
             return factId;
         }
 
-        public FactID? FindExistingFact(FactMemento translatedMemento)
+        public FactID? FindExistingFact(string domain, FactMemento translatedMemento)
         {
             FactID factId;
             if (!_memory.FindExistingFact(translatedMemento, out factId))
@@ -47,7 +47,7 @@ namespace Correspondence.Distributor.Test
             return factId;
         }
 
-        public List<FactID> LoadRecentMessages(FactID localPivotId, string clientGuid, TimestampID timestamp)
+        public List<FactID> LoadRecentMessages(string domain, FactID localPivotId, string clientGuid, TimestampID timestamp)
         {
             return _memory
                 .LoadRecentMessagesForClient(localPivotId, timestamp)

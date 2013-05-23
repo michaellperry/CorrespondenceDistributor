@@ -128,7 +128,7 @@ namespace Correspondence.Distributor.Test
 
         private long AddDomain()
         {
-            return _mockRepository.AddFact(CreateDomain());
+            return _mockRepository.AddFact("domain", CreateDomain());
         }
 
         private static FactMemento CreateDomain()
@@ -138,7 +138,7 @@ namespace Correspondence.Distributor.Test
 
         private long AddRoom(long domainId)
         {
-            return _mockRepository.AddFact(CreateRoom(domainId));
+            return _mockRepository.AddFact("domain", CreateRoom(domainId));
         }
 
         private static FactMemento CreateRoom(long domainId)
