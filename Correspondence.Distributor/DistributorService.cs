@@ -17,12 +17,17 @@ namespace Correspondence.Distributor
             _repository = repository;
         }
 
+        public event Delegates.PivotAffectedDelegate PivotAffected
+        {
+            add { _repository.PivotAffected += value; }
+            remove { _repository.PivotAffected -= value; }
+        }
+
         public FactTreeMemento GetMany(
             string clientGuid,
             string domain,
             FactTreeMemento pivotTree,
-            Dictionary<long, long> pivotIds,
-            int timeoutSeconds)
+            Dictionary<long, long> pivotIds)
         {
             FactTreeMemento messageBody = new FactTreeMemento(0);
             Dictionary<FactID, FactID> localIdByRemoteId = FindExistingFacts(domain, pivotTree);

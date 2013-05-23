@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UpdateControls.Correspondence.Mementos;
-using UpdateControls.Correspondence.Memory;
 
 namespace Correspondence.Distributor.Test
 {
     public class MockRepository : IRepository
     {
         private MemoryStorageStrategy _memory;
-        private Dictionary<FactID, string> _sourceByFact = new Dictionary<FactID, string>();
 
         public MockRepository()
         {
@@ -20,7 +18,8 @@ namespace Correspondence.Distributor.Test
         public long AddFact(string domain, FactMemento fact)
         {
             FactID factId;
-            _memory.Save(fact, 0, out factId);
+            List<FactID> affectedPivots;
+            _memory.Save(fact, 0, null, out affectedPivots, out factId);
             return factId.key;
         }
 
@@ -32,9 +31,11 @@ namespace Correspondence.Distributor.Test
         public FactID Save(string domain, FactMemento fact, string clientGuid)
         {
             FactID factId;
-            bool saved = _memory.Save(fact, 0, out factId);
-            if (saved)
-                _sourceByFact.Add(factId, clientGuid);
+            List<FactID> affectedPivots;
+            bool saved = _memory.Save(fact, 0, clientGuid, out affectedPivots, out factId);
+            if (saved && affectedPivots.Any() && PivotAffected != null)
+                foreach (var pivotId in affectedPivots)
+                    PivotAffected(domain, pivotId);
             return factId;
         }
 
@@ -50,17 +51,10 @@ namespace Correspondence.Distributor.Test
         public List<FactID> LoadRecentMessages(string domain, FactID localPivotId, string clientGuid, TimestampID timestamp)
         {
             return _memory
-                .LoadRecentMessagesForClient(localPivotId, timestamp)
-                .Where(id => IsNotForClient(id, clientGuid))
+                .LoadRecentMessagesForClient(localPivotId, timestamp, clientGuid)
                 .ToList();
         }
 
-        private bool IsNotForClient(FactID id, string clientGuid)
-        {
-            string sourceClientGuid;
-            if (!_sourceByFact.TryGetValue(id, out sourceClientGuid))
-                return true;
-            return sourceClientGuid != clientGuid;
-        }
+        public event Delegates.PivotAffectedDelegate PivotAffected;
     }
 }
