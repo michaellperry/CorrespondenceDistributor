@@ -16,7 +16,7 @@ namespace Correspondence.Distributor
         {
             public string Domain;
             public FactID PivotId;
-            public CancellationTokenSource Cancelation;
+            public CancellationTokenSource Cancellation;
         }
         private List<PivotNotification> _notifications;
 
@@ -34,23 +34,22 @@ namespace Correspondence.Distributor
             Dictionary<long, long> pivotIds,
             int timeoutSeconds)
         {
-            var result = new GetManyResult();
-            result.Tree = _service.GetMany(clientGuid, domain, tree, pivotIds);
+            GetManyResult result = GetManyFromService(clientGuid, domain, tree, pivotIds);
             if (timeoutSeconds > 0 && !result.Tree.Facts.Any())
             {
-                CancellationTokenSource cancelation = new CancellationTokenSource();
-                foreach (long pivotId in pivotIds.Keys)
-                {
-                    _notifications.Add(new PivotNotification
-                    {
-                        Domain = domain,
-                        PivotId = new FactID { key = pivotId },
-                        Cancelation = cancelation
-                    });
-                }
+                CancellationTokenSource cancellation = new CancellationTokenSource();
+                AddNotifications(domain, result.LocalPivotIds, cancellation);
                 return Task
-                    .Delay(timeoutSeconds * 1000, cancelation.Token)
-                    .ContinueWith(t => result);
+                    .Delay(timeoutSeconds * 1000, cancellation.Token)
+                    .ContinueWith(t => t.IsCanceled
+                        ? GetManyFromService(clientGuid, domain, tree, pivotIds)
+                        : result)
+                    .ContinueWith(t =>
+                    {
+                        RemoveNotifications(cancellation);
+                        cancellation.Dispose();
+                        return t.Result;
+                    });
             }
 
             return Task.FromResult(result);
@@ -61,12 +60,49 @@ namespace Correspondence.Distributor
             _service.Post(clientGuid, domain, factTree, unpublishMementos);
         }
 
+        private GetManyResult GetManyFromService(string clientGuid, string domain, FactTreeMemento tree, Dictionary<long, long> pivotIds)
+        {
+            var result = new GetManyResult();
+            var localPivotIds = new List<FactID>();
+            result.Tree = _service.GetMany(clientGuid, domain, tree, pivotIds, localPivotIds);
+            result.PivotIds = pivotIds;
+            result.LocalPivotIds = localPivotIds;
+            return result;
+        }
+
         private void Service_PivotAffected(string domain, FactID pivotId)
         {
             var notifications = _notifications
                 .Where(n => n.Domain == domain && n.PivotId.Equals(pivotId));
             foreach (var notification in notifications)
-                notification.Cancelation.Cancel();
+                notification.Cancellation.Cancel();
+        }
+
+        private void AddNotifications(
+            string domain,
+            List<FactID> pivotIds,
+            CancellationTokenSource cancellation)
+        {
+            lock (this)
+            {
+                foreach (var pivotId in pivotIds)
+                {
+                    _notifications.Add(new PivotNotification
+                    {
+                        Domain = domain,
+                        PivotId = pivotId,
+                        Cancellation = cancellation
+                    });
+                }
+            }
+        }
+
+        private void RemoveNotifications(CancellationTokenSource cancellation)
+        {
+            lock (this)
+            {
+                _notifications.RemoveAll(n => n.Cancellation == cancellation);
+            }
         }
     }
 }

@@ -27,18 +27,19 @@ namespace Correspondence.Distributor
             string clientGuid,
             string domain,
             FactTreeMemento pivotTree,
-            Dictionary<long, long> pivotIds)
+            Dictionary<long, long> pivotIds,
+            List<FactID> localPivotIds)
         {
             FactTreeMemento messageBody = new FactTreeMemento(0);
             Dictionary<FactID, FactID> localIdByRemoteId = FindExistingFacts(domain, pivotTree);
             Dictionary<long, long> newPivotIds = new Dictionary<long, long>();
             foreach (var pivot in pivotIds)
             {
-                long pivotId = pivot.Key;
+                long remotePivotId = pivot.Key;
                 FactID localPivotId;
                 long pivotValue = pivot.Value;
                 TimestampID timestamp = new TimestampID(0, pivotValue);
-                if (localIdByRemoteId.TryGetValue(new FactID { key = pivotId }, out localPivotId))
+                if (localIdByRemoteId.TryGetValue(new FactID { key = remotePivotId }, out localPivotId))
                 {
                     List<FactID> recentMessages = _repository.LoadRecentMessages(domain, localPivotId, clientGuid, timestamp);
                     foreach (FactID recentMessage in recentMessages)
@@ -47,7 +48,8 @@ namespace Correspondence.Distributor
                         if (recentMessage.key > pivotValue)
                             pivotValue = recentMessage.key;
                     }
-                    newPivotIds[pivotId] = pivotValue;
+                    newPivotIds[remotePivotId] = pivotValue;
+                    localPivotIds.Add(localPivotId);
                 }
             }
 

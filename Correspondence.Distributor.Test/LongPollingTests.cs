@@ -4,6 +4,7 @@ using UpdateControls.Correspondence.Mementos;
 using System.Collections.Generic;
 using Correspondence.Distributor;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Correspondence.Distributor.Test
 {
@@ -28,9 +29,13 @@ namespace Correspondence.Distributor.Test
                 CreateDomain()));
             Dictionary<long, long> pivotIds = new Dictionary<long, long>();
             pivotIds[4124] = 0;
-            Task<GetManyResult> result = _node.GetMany("clientGuid", "domain", tree, pivotIds, 30);
+            Task<GetManyResult> result = _node.GetMany("clientGuid", "domain", tree, pivotIds, 1);
 
             Assert.IsFalse(result.IsCompleted);
+
+            // Wait for 1 second.
+            var gmResult = result.Result;
+            Assert.AreEqual(0, gmResult.Tree.Facts.Count());
         }
 
         [TestMethod]
@@ -42,6 +47,7 @@ namespace Correspondence.Distributor.Test
                 CreateDomain()));
             Dictionary<long, long> pivotIds1 = new Dictionary<long, long>();
             pivotIds1[4124] = 0;
+            _node.Post("clientGuid1", "domain", tree1, new List<UnpublishMemento>());
             Task<GetManyResult> result1 = _node.GetMany("clientGuid1", "domain", tree1, pivotIds1, 30);
 
             FactTreeMemento tree2 = new FactTreeMemento(0);
@@ -53,7 +59,8 @@ namespace Correspondence.Distributor.Test
                 CreateRoom(12)));
             _node.Post("clientGuid2", "domain", tree2, new List<UnpublishMemento>());
 
-            Assert.IsTrue(result1.IsCompleted);
+            var result = result1.Result;
+            Assert.AreEqual(2, result.Tree.Facts.Count());
         }
     }
 }
