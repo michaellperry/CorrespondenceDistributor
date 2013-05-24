@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using UpdateControls.Correspondence;
 using UpdateControls.Correspondence.Mementos;
 
 namespace Correspondence.Distributor
@@ -11,27 +10,48 @@ namespace Correspondence.Distributor
     public class DistributorService
     {
         private IRepository _repository;
+        private MessageBus _messageBus;
 
         public DistributorService(IRepository repository)
         {
             _repository = repository;
+            _repository.PivotAffected += Repository_PivotAffected;
+            _messageBus = new MessageBus();
         }
 
-        public event Delegates.PivotAffectedDelegate PivotAffected
-        {
-            add { _repository.PivotAffected += value; }
-            remove { _repository.PivotAffected -= value; }
-        }
-
-        public FactTreeMemento GetMany(
+        public Task<GetManyResult> GetMany(
             string clientGuid,
             string domain,
-            FactTreeMemento pivotTree,
+            FactTreeMemento tree,
             Dictionary<long, long> pivotIds,
-            List<FactID> localPivotIds)
+            int timeoutSeconds)
         {
+            GetManyResult result = GetManyInternal(clientGuid, domain, tree, pivotIds);
+            if (timeoutSeconds > 0 && !result.Tree.Facts.Any())
+            {
+                CancellationTokenSource cancellation = new CancellationTokenSource();
+                _messageBus.Register(domain, result.LocalPivotIds, cancellation);
+                return Task
+                    .Delay(timeoutSeconds * 1000, cancellation.Token)
+                    .ContinueWith(t => t.IsCanceled
+                        ? GetManyInternal(clientGuid, domain, tree, pivotIds)
+                        : result)
+                    .ContinueWith(t =>
+                    {
+                        _messageBus.Unregister(cancellation);
+                        cancellation.Dispose();
+                        return t.Result;
+                    });
+            }
+
+            return Task.FromResult(result);
+        }
+
+        private GetManyResult GetManyInternal(string clientGuid, string domain, FactTreeMemento tree, Dictionary<long, long> pivotIds)
+        {
+            var localPivotIds = new List<FactID>();
             FactTreeMemento messageBody = new FactTreeMemento(0);
-            Dictionary<FactID, FactID> localIdByRemoteId = FindExistingFacts(domain, pivotTree);
+            Dictionary<FactID, FactID> localIdByRemoteId = FindExistingFacts(domain, tree);
             Dictionary<long, long> newPivotIds = new Dictionary<long, long>();
             foreach (var pivot in pivotIds)
             {
@@ -52,11 +72,15 @@ namespace Correspondence.Distributor
                     localPivotIds.Add(localPivotId);
                 }
             }
-
             foreach (var pivot in newPivotIds)
                 pivotIds[pivot.Key] = pivot.Value;
-
-            return messageBody;
+            var result = new GetManyResult()
+            {
+                Tree = messageBody,
+                PivotIds = pivotIds,
+                LocalPivotIds = localPivotIds
+            };
+            return result;
         }
 
         public void Post(
@@ -161,6 +185,11 @@ namespace Correspondence.Distributor
                     AddToFactTree(domain, messageBody, predecessor.ID, localIdByRemoteId);
                 messageBody.Add(new IdentifiedFactMemento(factId, fact));
             }
+        }
+
+        private void Repository_PivotAffected(string domain, FactID pivotId)
+        {
+            _messageBus.Notify(domain, pivotId);
         }
     }
 }
