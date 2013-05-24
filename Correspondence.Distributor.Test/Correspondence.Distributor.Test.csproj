@@ -67,7 +67,6 @@
     <Compile Include="Duration.cs" />
     <Compile Include="Records\FactRecord.cs" />
     <Compile Include="LongPollingTests.cs" />
-    <Compile Include="MemoryStorageStrategy.cs" />
     <Compile Include="Records\MessageRecord.cs" />
     <Compile Include="PublishSubscribeTests.cs" />
     <Compile Include="MockRepository.cs" />

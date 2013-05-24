@@ -26,7 +26,7 @@ namespace Correspondence.Distributor.Test
 
         protected long AddDomain()
         {
-            return _mockRepository.AddFact("domain", CreateDomain());
+            return _mockRepository.Save("domain", CreateDomain(), null).key;
         }
 
         protected static FactMemento CreateDomain()
@@ -36,7 +36,7 @@ namespace Correspondence.Distributor.Test
 
         protected long AddRoom(long domainId)
         {
-            return _mockRepository.AddFact("domain", CreateRoom(domainId));
+            return _mockRepository.Save("domain", CreateRoom(domainId), null).key;
         }
 
         protected static FactMemento CreateRoom(long domainId)
