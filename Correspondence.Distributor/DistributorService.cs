@@ -30,7 +30,7 @@ namespace Correspondence.Distributor
             if (timeoutSeconds > 0 && !result.Tree.Facts.Any())
             {
                 CancellationTokenSource cancellation = new CancellationTokenSource();
-                _messageBus.Register(domain, result.LocalPivotIds, cancellation);
+                _messageBus.Register(domain, result.LocalPivotIds, clientGuid, cancellation);
                 return Task
                     .Delay(timeoutSeconds * 1000, cancellation.Token)
                     .ContinueWith(t => t.IsCanceled
@@ -96,7 +96,7 @@ namespace Correspondence.Distributor
             string clientGuid,
             string domain)
         {
-            throw new NotImplementedException();
+            _messageBus.Notify(domain, clientGuid);
         }
 
         public void Notify(

@@ -11,6 +11,7 @@ namespace Correspondence.Distributor
         {
             public string Domain;
             public FactID PivotId;
+            public string ClientGuid;
             public CancellationTokenSource Cancellation;
         }
         private List<Registration> _registrations = new List<Registration>();
@@ -19,6 +20,7 @@ namespace Correspondence.Distributor
         public void Register(
             string domain,
             List<FactID> pivotIds,
+            string clientGuid,
             CancellationTokenSource cancellation)
         {
             lock (this)
@@ -29,6 +31,7 @@ namespace Correspondence.Distributor
                     {
                         Domain = domain,
                         PivotId = pivotId,
+                        ClientGuid = clientGuid,
                         Cancellation = cancellation
                     });
                 }
@@ -43,12 +46,34 @@ namespace Correspondence.Distributor
             }
         }
 
+        public void Notify(string domain, string clientGuid)
+        {
+            List<Registration> registrations;
+            lock (this)
+            {
+                registrations = _registrations
+                    .Where(n =>
+                        n.Domain == domain &&
+                        n.ClientGuid == clientGuid)
+                    .ToList();
+            }
+            foreach (var registration in registrations)
+                registration.Cancellation.Cancel();
+        }
+
         public void Notify(string domain, FactID pivotId)
         {
-            var notifications = _registrations
-                .Where(n => n.Domain == domain && n.PivotId.Equals(pivotId));
-            foreach (var notification in notifications)
-                notification.Cancellation.Cancel();
+            List<Registration> registrations;
+            lock (this)
+            {
+                registrations = _registrations
+                    .Where(n =>
+                        n.Domain == domain &&
+                        n.PivotId.Equals(pivotId))
+                    .ToList();
+            }
+            foreach (var registration in registrations)
+                registration.Cancellation.Cancel();
         }
     }
 }
