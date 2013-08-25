@@ -1,145 +1,61 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
+using System.Threading.Tasks;
 using System.Web;
-using Correspondence.Distributor.BinaryHttp;
-using UpdateControls.Correspondence;
-using UpdateControls.Correspondence.Mementos;
 
 namespace Correspondence.Distributor.Web
 {
-    public class BinaryHttpHandler : IHttpHandler
+    public class BinaryHttpHandler : HttpTaskAsyncHandler
     {
-        private DistributorService _service;
+        private class HttpResponseData
+        {
+            public string ContentType { get; set; }
+            public byte[] Data { get; set; }
+        }
+
+        private RequestProcessor _requestProcessor;
 
         public BinaryHttpHandler()
         {
-            _service = new DistributorService();
+            _requestProcessor = new RequestProcessor();
         }
 
-        public bool IsReusable
+        public override async Task ProcessRequestAsync(HttpContext context)
         {
-            get { return true; }
+            var responseData = await GetResponseAsync(context.Request);
+            context.Response.ContentType = responseData.ContentType;
+            context.Response.OutputStream.Write(responseData.Data, 0, responseData.Data.Length);
         }
 
-        public void ProcessRequest(HttpContext context)
+        private async Task<HttpResponseData> GetResponseAsync(HttpRequest request)
         {
-            if (context.Request.HttpMethod == "POST")
-                Post(context.Request, context.Response);
-            else if (context.Request.HttpMethod == "GET")
-                Get(context.Response);
-        }
-
-        private void Post(HttpRequest httpRequest, HttpResponse httpResponse)
-        {
-            var reader = new BinaryReader(httpRequest.InputStream);
-            BinaryRequest request = BinaryRequest.Read(reader);
-
-            BinaryResponse response =
-                TryHandle<GetManyRequest>(request, GetMany) ??
-                TryHandle<PostRequest>(request, Post) ??
-                TryHandle<InterruptRequest>(request, Interrupt) ??
-                TryHandle<NotifyRequest>(request, Notify) ??
-                TryHandle<WindowsSubscribeRequest>(request, WindowsSubscribe) ??
-                TryHandle<WindowsUnsubscribeRequest>(request, WindowsUnsubscribe);
-            if (response == null)
-                throw new CorrespondenceException(String.Format("Unknown request type {0}.", request));
-            using (var writer = new BinaryWriter(httpResponse.OutputStream))
-            {
-                response.Write(writer);
-            }
-        }
-
-        private void Get(HttpResponse httpResponse)
-        {
-            using (var writer = new StreamWriter(httpResponse.OutputStream))
-            {
-                writer.Write("<html><head><title>Correspondence Distributor</title></head><body><h1>Correspondence Distributor</h1></body></html>");
-            }
-        }
-
-        private BinaryResponse TryHandle<TRequest>(BinaryRequest request, Func<TRequest, BinaryResponse> method)
-            where TRequest : BinaryRequest
-        {
-            TRequest specificRequest = request as TRequest;
-            if (specificRequest != null)
-                return method(specificRequest);
+            if (request.HttpMethod == "POST")
+                return new HttpResponseData
+                {
+                    ContentType = "application/octet-stream",
+                    Data = await _requestProcessor.PostAsync(request.InputStream)
+                };
+            else if (request.HttpMethod == "GET")
+                return new HttpResponseData
+                {
+                    ContentType = "text/html",
+                    Data = await _requestProcessor.GetAsync()
+                };
             else
-                return null;
+                return new HttpResponseData
+                {
+                    ContentType = "text/html",
+                    Data = ReturnError()
+                };
         }
 
-        private GetManyResponse GetMany(GetManyRequest request)
+        private byte[] ReturnError()
         {
-            var pivotIds = request.PivotIds
-                .ToDictionary(p => p.FactId, p => p.TimestampId);
-            FactTreeMemento factTree = _service.GetMany(
-                request.ClientGuid, 
-                request.Domain, 
-                request.PivotTree, 
-                pivotIds, 
-                request.TimeoutSeconds);
-            return new GetManyResponse
+            MemoryStream memory = new MemoryStream();
+            using (var writer = new StreamWriter(memory))
             {
-                FactTree = factTree,
-                PivotIds = pivotIds
-                    .Select(pair => new FactTimestamp
-                    {
-                        FactId = pair.Key,
-                        TimestampId = pair.Value
-                    })
-                    .ToList()
-            };
-        }
-
-        private PostResponse Post(PostRequest request)
-        {
-            _service.Post(
-                request.ClientGuid,
-                request.Domain,
-                request.MessageBody,
-                request.UnpublishedMessages);
-            return new PostResponse();
-        }
-
-        private InterruptResponse Interrupt(InterruptRequest request)
-        {
-            _service.Interrupt(
-                request.ClientGuid,
-                request.Domain);
-            return new InterruptResponse();
-        }
-
-        private NotifyResponse Notify(NotifyRequest request)
-        {
-            _service.Notify(
-                request.ClientGuid,
-                request.Domain,
-                request.PivotTree,
-                request.PivotId,
-                request.Text1,
-                request.Text2);
-            return new NotifyResponse();
-        }
-
-        private WindowsSubscribeResponse WindowsSubscribe(WindowsSubscribeRequest request)
-        {
-            _service.WindowsSubscribe(
-                request.ClientGuid,
-                request.Domain,
-                request.PivotTree,
-                request.PivotId,
-                request.DeviceUri);
-            return new WindowsSubscribeResponse();
-        }
-
-        private WindowsUnsubscribeResponse WindowsUnsubscribe(WindowsUnsubscribeRequest request)
-        {
-            _service.WindowsUnsubscribe(
-                request.Domain,
-                request.PivotTree,
-                request.PivotId,
-                request.DeviceUri);
-            return new WindowsUnsubscribeResponse();
+                writer.Write("<html><head><title>Correspondence Distributor</title></head><body><h1>Correspondence Distributor</h1>I expected GET or POST.</body></html>");
+            }
+            return memory.ToArray();
         }
     }
 }
