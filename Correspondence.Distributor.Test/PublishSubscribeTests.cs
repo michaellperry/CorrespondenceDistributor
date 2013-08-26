@@ -21,7 +21,7 @@ namespace Correspondence.Distributor.Test
         {
             FactTreeMemento tree = new FactTreeMemento(0);
             Dictionary<long, long> pivotIds = new Dictionary<long, long>();
-            var result = _service.GetMany("clientGuid", "domain", tree, pivotIds, 0).Result.Tree;
+            var result = _service.GetManyAsync("clientGuid", "domain", tree, pivotIds, 0).Result.Tree;
             Assert.IsFalse(result.Facts.Any());
         }
 
@@ -38,7 +38,7 @@ namespace Correspondence.Distributor.Test
             Dictionary<long, long> pivotIds = new Dictionary<long, long>();
             pivotIds.Add(4124, 0);
 
-            var result = _service.GetMany("clientGuid", "domain", tree, pivotIds, 0).Result.Tree;
+            var result = _service.GetManyAsync("clientGuid", "domain", tree, pivotIds, 0).Result.Tree;
             Assert.AreEqual(2, result.Facts.Count());
             IdentifiedFactRemote resultDomain = (IdentifiedFactRemote)result.Facts.ElementAt(0);
             IdentifiedFactMemento resultRoom = (IdentifiedFactMemento)result.Facts.ElementAt(1);
@@ -61,7 +61,7 @@ namespace Correspondence.Distributor.Test
             Dictionary<long, long> pivotIds = new Dictionary<long, long>();
             pivotIds.Add(4124, roomId);
 
-            var result = _service.GetMany("clientGuid", "domain", tree, pivotIds, 0).Result.Tree;
+            var result = _service.GetManyAsync("clientGuid", "domain", tree, pivotIds, 0).Result.Tree;
             Assert.AreEqual(0, result.Facts.Count());
         }
 
@@ -83,7 +83,7 @@ namespace Correspondence.Distributor.Test
                 CreateDomain()));
             Dictionary<long, long> pivotIds = new Dictionary<long, long>();
             pivotIds[9898] = 0;
-            var result = _service.GetMany("clientGuid2", "domain", getTree, pivotIds, 0).Result.Tree;
+            var result = _service.GetManyAsync("clientGuid2", "domain", getTree, pivotIds, 0).Result.Tree;
 
             Assert.AreEqual(2, result.Facts.Count());
             IdentifiedFactRemote resultDomain = (IdentifiedFactRemote)result.Facts.ElementAt(0);
@@ -111,7 +111,7 @@ namespace Correspondence.Distributor.Test
                 CreateDomain()));
             Dictionary<long, long> pivotIds = new Dictionary<long, long>();
             pivotIds[9898] = 0;
-            var result = _service.GetMany("clientGuid1", "domain", getTree, pivotIds, 0).Result.Tree;
+            var result = _service.GetManyAsync("clientGuid1", "domain", getTree, pivotIds, 0).Result.Tree;
 
             Assert.AreEqual(0, result.Facts.Count());
         }

@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using System.Web;
+using Correspondence.Distributor.SqlRepository;
 
 namespace Correspondence.Distributor.Web
 {
@@ -16,7 +17,7 @@ namespace Correspondence.Distributor.Web
 
         public BinaryHttpHandler()
         {
-            _requestProcessor = new RequestProcessor();
+            _requestProcessor = new RequestProcessor(new Repository("Correspondence"));
         }
 
         public override async Task ProcessRequestAsync(HttpContext context)

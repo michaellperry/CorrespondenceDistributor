@@ -59,7 +59,7 @@ namespace Correspondence.Distributor.Test
             Dictionary<long, long> pivotIds = new Dictionary<long, long>();
             pivotIds[4124] = 0;
             _service.Post("clientGuid1", "domain", tree, new List<UnpublishMemento>());
-            return _service.GetMany("clientGuid1", "domain", tree, pivotIds, 1);
+            return _service.GetManyAsync("clientGuid1", "domain", tree, pivotIds, 1);
         }
 
         private void PostFromClient2()

@@ -19,7 +19,7 @@ namespace Correspondence.Distributor
             _messageBus = new MessageBus();
         }
 
-        public Task<GetManyResult> GetMany(
+        public Task<GetManyResult> GetManyAsync(
             string clientGuid,
             string domain,
             FactTreeMemento tree,

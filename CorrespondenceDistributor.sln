@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Correspondence.Distributor.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Correspondence.Distributor.Test", "Correspondence.Distributor.Test\Correspondence.Distributor.Test.csproj", "{82560DA7-1D1D-4FFC-803A-C4128E73E5E2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Correspondence.Distributor.SqlRepository.Test", "Correspondence.Distributor.SqlRepository.Test\Correspondence.Distributor.SqlRepository.Test.csproj", "{7AD768E3-6850-4F49-BB1F-3AA98BC3CB08}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +64,10 @@ Global
 		{82560DA7-1D1D-4FFC-803A-C4128E73E5E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82560DA7-1D1D-4FFC-803A-C4128E73E5E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82560DA7-1D1D-4FFC-803A-C4128E73E5E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AD768E3-6850-4F49-BB1F-3AA98BC3CB08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AD768E3-6850-4F49-BB1F-3AA98BC3CB08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AD768E3-6850-4F49-BB1F-3AA98BC3CB08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AD768E3-6850-4F49-BB1F-3AA98BC3CB08}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

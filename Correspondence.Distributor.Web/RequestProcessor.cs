@@ -14,9 +14,9 @@ namespace Correspondence.Distributor.Web
     {
         private DistributorService _service;
 
-        public RequestProcessor()
+        public RequestProcessor(IRepository repository)
         {
-            _service = new DistributorService(new SqlRepository.Repository());
+            _service = new DistributorService(repository);
         }
 
         public async Task<byte[]> PostAsync(Stream inputStream)
@@ -25,12 +25,12 @@ namespace Correspondence.Distributor.Web
             BinaryRequest request = BinaryRequest.Read(reader);
 
             var task =
-                TryHandle<GetManyRequest, GetManyResponse>(request, GetMany) ??
-                TryHandle<PostRequest, PostResponse>(request, Post) ??
-                TryHandle<InterruptRequest, InterruptResponse>(request, Interrupt) ??
-                TryHandle<NotifyRequest, NotifyResponse>(request, Notify) ??
-                TryHandle<WindowsSubscribeRequest, WindowsSubscribeResponse>(request, WindowsSubscribe) ??
-                TryHandle<WindowsUnsubscribeRequest, WindowsUnsubscribeResponse>(request, WindowsUnsubscribe);
+                TryHandleAsync<GetManyRequest, GetManyResponse>(request, GetManyAsync) ??
+                TryHandleAsync<PostRequest, PostResponse>(request, PostAsync) ??
+                TryHandleAsync<InterruptRequest, InterruptResponse>(request, InterruptAsync) ??
+                TryHandleAsync<NotifyRequest, NotifyResponse>(request, NotifyAsync) ??
+                TryHandleAsync<WindowsSubscribeRequest, WindowsSubscribeResponse>(request, WindowsSubscribeAsync) ??
+                TryHandleAsync<WindowsUnsubscribeRequest, WindowsUnsubscribeResponse>(request, WindowsUnsubscribeAsync);
             if (task == null)
                 throw new CorrespondenceException(String.Format("Unknown request type {0}.", request));
             BinaryResponse response = await task;
@@ -54,7 +54,7 @@ namespace Correspondence.Distributor.Web
             }
         }
 
-        private Task<BinaryResponse> TryHandle<TRequest, TResponse>(BinaryRequest request, Func<TRequest, Task<TResponse>> method)
+        private Task<BinaryResponse> TryHandleAsync<TRequest, TResponse>(BinaryRequest request, Func<TRequest, Task<TResponse>> method)
             where TRequest : BinaryRequest
             where TResponse : BinaryResponse
         {
@@ -65,11 +65,11 @@ namespace Correspondence.Distributor.Web
                 return null;
         }
 
-        private async Task<GetManyResponse> GetMany(GetManyRequest request)
+        private async Task<GetManyResponse> GetManyAsync(GetManyRequest request)
         {
             var pivotIds = request.PivotIds
                 .ToDictionary(p => p.FactId, p => p.TimestampId);
-            var result = await _service.GetMany(
+            var result = await _service.GetManyAsync(
                 request.ClientGuid,
                 request.Domain,
                 request.PivotTree,
@@ -89,7 +89,7 @@ namespace Correspondence.Distributor.Web
             };
         }
 
-        private async Task<PostResponse> Post(PostRequest request)
+        private async Task<PostResponse> PostAsync(PostRequest request)
         {
             _service.Post(
                 request.ClientGuid,
@@ -99,7 +99,7 @@ namespace Correspondence.Distributor.Web
             return new PostResponse();
         }
 
-        private async Task<InterruptResponse> Interrupt(InterruptRequest request)
+        private async Task<InterruptResponse> InterruptAsync(InterruptRequest request)
         {
             _service.Interrupt(
                 request.ClientGuid,
@@ -107,7 +107,7 @@ namespace Correspondence.Distributor.Web
             return new InterruptResponse();
         }
 
-        private async Task<NotifyResponse> Notify(NotifyRequest request)
+        private async Task<NotifyResponse> NotifyAsync(NotifyRequest request)
         {
             _service.Notify(
                 request.ClientGuid,
@@ -119,7 +119,7 @@ namespace Correspondence.Distributor.Web
             return new NotifyResponse();
         }
 
-        private async Task<WindowsSubscribeResponse> WindowsSubscribe(WindowsSubscribeRequest request)
+        private async Task<WindowsSubscribeResponse> WindowsSubscribeAsync(WindowsSubscribeRequest request)
         {
             _service.WindowsSubscribe(
                 request.ClientGuid,
@@ -130,7 +130,7 @@ namespace Correspondence.Distributor.Web
             return new WindowsSubscribeResponse();
         }
 
-        private async Task<WindowsUnsubscribeResponse> WindowsUnsubscribe(WindowsUnsubscribeRequest request)
+        private async Task<WindowsUnsubscribeResponse> WindowsUnsubscribeAsync(WindowsUnsubscribeRequest request)
         {
             _service.WindowsUnsubscribe(
                 request.Domain,
