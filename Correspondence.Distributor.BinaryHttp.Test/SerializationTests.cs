@@ -29,7 +29,7 @@ namespace Correspondence.Distributor.BinaryHttp.Test
                 r => Server.BinaryRequest.Read(r) as Server.GetManyRequest);
 
             Assert.IsNotNull(serverRequest);
-            Assert.AreEqual("{96E5C2E2-1345-482E-9668-6009DCDC0E70}", serverRequest.ClientGuid);
+            Assert.AreEqual(Guid.Parse("{96E5C2E2-1345-482E-9668-6009DCDC0E70}"), serverRequest.ClientGuid);
             Assert.AreEqual("TestDomain", serverRequest.Domain);
             Assert.AreEqual(30, serverRequest.TimeoutSeconds);
             Assert.AreEqual(0, serverRequest.PivotTree.Facts.Count());
@@ -190,7 +190,7 @@ namespace Correspondence.Distributor.BinaryHttp.Test
             var serverRequest = WriteAndRead(
                 w => new Client.PostRequest
                 {
-                    ClientGuid = "187268",
+                    ClientGuid = "{723B7C9F-7E80-4538-8CE5-EA5A73D13559}",
                     Domain = "Cheese",
                     MessageBody = CreateTreeWithSingleFact(),
                     UnpublishedMessages = new List<UnpublishMemento>
@@ -201,7 +201,7 @@ namespace Correspondence.Distributor.BinaryHttp.Test
                 r => Server.BinaryRequest.Read(r) as Server.PostRequest);
 
             Assert.IsNotNull(serverRequest);
-            Assert.AreEqual("187268", serverRequest.ClientGuid);
+            Assert.AreEqual(Guid.Parse("{723B7C9F-7E80-4538-8CE5-EA5A73D13559}"), serverRequest.ClientGuid);
             Assert.AreEqual("Cheese", serverRequest.Domain);
             Assert.AreEqual(1, serverRequest.MessageBody.Facts.Count());
             Assert.AreEqual(1, serverRequest.UnpublishedMessages.Count());

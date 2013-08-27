@@ -44,7 +44,7 @@ namespace Correspondence.Distributor.BinaryHttp
 
         public FactTreeMemento PivotTree { get; set; }
         public List<FactTimestamp> PivotIds { get; set; }
-        public string ClientGuid { get; set; }
+        public Guid ClientGuid { get; set; }
         public int TimeoutSeconds { get; set; }
 
         public static GetManyRequest CreateAndRead(string domain, BinaryReader requestReader)
@@ -73,7 +73,7 @@ namespace Correspondence.Distributor.BinaryHttp
                     TimestampId = timestampId
                 });
             }
-            ClientGuid = BinaryHelper.ReadString(requestReader);
+            ClientGuid = Guid.Parse(BinaryHelper.ReadString(requestReader));
             TimeoutSeconds = BinaryHelper.ReadInt(requestReader);
         }
     }
@@ -82,7 +82,7 @@ namespace Correspondence.Distributor.BinaryHttp
         public static byte Token = 2;
 
         public FactTreeMemento MessageBody { get; set; }
-        public string ClientGuid { get; set; }
+        public Guid ClientGuid { get; set; }
         public List<UnpublishMemento> UnpublishedMessages { get; set; }
 
         public static PostRequest CreateAndRead(string domain, BinaryReader requestReader)
@@ -99,7 +99,7 @@ namespace Correspondence.Distributor.BinaryHttp
             FactTreeSerializer factTreeSerlializer = new FactTreeSerializer();
             MessageBody = factTreeSerlializer.DeserializeFactTree(requestReader);
 
-            ClientGuid = BinaryHelper.ReadString(requestReader);
+            ClientGuid = Guid.Parse(BinaryHelper.ReadString(requestReader));
             short unpublishedMessageCount = BinaryHelper.ReadShort(requestReader);
             if (unpublishedMessageCount < 0 || unpublishedMessageCount > 256)
                 throw new CorrespondenceException(String.Format("Incorrect number of unpublished messages in Post request: {0}.", unpublishedMessageCount));
@@ -120,7 +120,7 @@ namespace Correspondence.Distributor.BinaryHttp
     {
         public static byte Token = 5;
 
-        public string ClientGuid { get; set; }
+        public Guid ClientGuid { get; set; }
 
         public static InterruptRequest CreateAndRead(string domain, BinaryReader requestReader)
         {
@@ -132,7 +132,7 @@ namespace Correspondence.Distributor.BinaryHttp
         private void ReadInternal(string domain, BinaryReader requestReader)
         {
             Domain = domain;
-            ClientGuid = BinaryHelper.ReadString(requestReader);
+            ClientGuid = Guid.Parse(BinaryHelper.ReadString(requestReader));
         }
     }
     public class NotifyRequest : BinaryRequest
@@ -141,7 +141,7 @@ namespace Correspondence.Distributor.BinaryHttp
 
         public FactTreeMemento PivotTree { get; set; }
         public long PivotId { get; set; }
-        public string ClientGuid { get; set; }
+        public Guid ClientGuid { get; set; }
         public string Text1 { get; set; }
         public string Text2 { get; set; }
 
@@ -157,7 +157,7 @@ namespace Correspondence.Distributor.BinaryHttp
             Domain = domain;
             PivotTree = new FactTreeSerializer().DeserializeFactTree(requestReader);
             PivotId = BinaryHelper.ReadLong(requestReader);
-            ClientGuid = BinaryHelper.ReadString(requestReader);
+            ClientGuid = Guid.Parse(BinaryHelper.ReadString(requestReader));
             Text1 = BinaryHelper.ReadString(requestReader);
             Text2 = BinaryHelper.ReadString(requestReader);
         }
@@ -169,7 +169,7 @@ namespace Correspondence.Distributor.BinaryHttp
         public FactTreeMemento PivotTree { get; set; }
         public long PivotId { get; set; }
         public string DeviceUri { get; set; }
-        public string ClientGuid { get; set; }
+        public Guid ClientGuid { get; set; }
 
         public static WindowsSubscribeRequest CreateAndRead(string domain, BinaryReader requestReader)
         {
@@ -184,7 +184,7 @@ namespace Correspondence.Distributor.BinaryHttp
             PivotTree = new FactTreeSerializer().DeserializeFactTree(requestReader);
             PivotId = BinaryHelper.ReadLong(requestReader);
             DeviceUri = BinaryHelper.ReadString(requestReader);
-            ClientGuid = BinaryHelper.ReadString(requestReader);
+            ClientGuid = Guid.Parse(BinaryHelper.ReadString(requestReader));
         }
     }
     public class WindowsUnsubscribeRequest : BinaryRequest

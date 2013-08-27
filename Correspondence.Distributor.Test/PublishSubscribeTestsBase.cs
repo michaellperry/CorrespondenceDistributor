@@ -1,3 +1,4 @@
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UpdateControls.Correspondence.Mementos;
 
@@ -22,7 +23,7 @@ namespace Correspondence.Distributor.Test
 
         protected long AddDomain()
         {
-            return _mockRepository.Save("domain", CreateDomain(), null).key;
+            return _mockRepository.Save("domain", CreateDomain(), Guid.Empty).key;
         }
 
         protected static FactMemento CreateDomain()
@@ -32,7 +33,7 @@ namespace Correspondence.Distributor.Test
 
         protected long AddRoom(long domainId)
         {
-            return _mockRepository.Save("domain", CreateRoom(domainId), null).key;
+            return _mockRepository.Save("domain", CreateRoom(domainId), Guid.Empty).key;
         }
 
         protected static FactMemento CreateRoom(long domainId)

@@ -41,7 +41,7 @@ namespace Correspondence.Distributor.SqlRepository
             throw new NotImplementedException();
         }
 
-        public FactID Save(string domain, FactMemento fact, string clientGuid)
+        public FactID Save(string domain, FactMemento fact, Guid clientGuid)
         {
             using (var session = new Session(_connectionString))
             {
@@ -110,8 +110,8 @@ namespace Correspondence.Distributor.SqlRepository
                 else
                     nonPivotMessages = new List<MessageMemento>();
 
-                int peerId = 0;
-                SaveMessages(session, pivotMessages.Union(nonPivotMessages).Distinct(), peerId);
+                int clientId = SaveClient(session, clientGuid);
+                SaveMessages(session, pivotMessages.Union(nonPivotMessages).Distinct(), clientId);
 
                 return id;
             }
@@ -119,12 +119,37 @@ namespace Correspondence.Distributor.SqlRepository
 
         public FactID? FindExistingFact(string domain, FactMemento fact)
         {
-            throw new NotImplementedException();
+            using (var session = new Session(_connectionString))
+            {
+                FactID id;
+                if (FindExistingFact(fact, out id, session))
+                    return id;
+                return null;
+            }
         }
 
-        public List<FactID> LoadRecentMessages(string domain, FactID pivotId, string clientGuid, TimestampID timestamp)
+        public List<FactID> LoadRecentMessages(string domain, FactID pivotId, Guid clientGuid, TimestampID timestamp)
         {
-            throw new NotImplementedException();
+            using (var session = new Session(_connectionString))
+            {
+                int clientId = SaveClient(session, clientGuid);
+                session.Command.CommandText =
+                    "SELECT TOP (20) FactId " +
+                    "FROM Message " +
+                    "WHERE PivotId = @PivotId " +
+                    "AND FactId > @Timestamp " +
+                    "AND ClientId != @ClientId " +
+                    "ORDER BY FactId";
+                AddParameter(session.Command, "@PivotId", pivotId.key);
+                AddParameter(session.Command, "@Timestamp", timestamp.Key);
+                AddParameter(session.Command, "@ClientId", clientId);
+                using (IDataReader messageReader = session.Command.ExecuteReader())
+                {
+                    session.Command.Parameters.Clear();
+
+                    return LoadIDsFromReader(messageReader).ToList();
+                }
+            }
         }
 
         private bool FindExistingFact(FactMemento memento, out FactID id, Session session)
@@ -158,14 +183,14 @@ namespace Correspondence.Distributor.SqlRepository
             }
         }
 
-        private void SaveMessages(Session session, IEnumerable<MessageMemento> messages, int peerId)
+        private void SaveMessages(Session session, IEnumerable<MessageMemento> messages, int clientId)
         {
-            session.Command.CommandText = "INSERT INTO Message (FactId, PivotId, PeerId) VALUES (@FactId, @PivotId, @PeerId)";
+            session.Command.CommandText = "INSERT INTO Message (FactId, PivotId, ClientId) VALUES (@FactId, @PivotId, @ClientId)";
             foreach (MessageMemento message in messages)
             {
                 AddParameter(session.Command, "@FactId", message.FactId.key);
                 AddParameter(session.Command, "@PivotId", message.PivotId.key);
-                AddParameter(session.Command, "@PeerId", peerId);
+                AddParameter(session.Command, "@ClientId", clientId);
                 session.Command.ExecuteNonQuery();
                 session.Command.Parameters.Clear();
             }
@@ -291,6 +316,37 @@ namespace Correspondence.Distributor.SqlRepository
             }
 
             return typeId;
+        }
+
+        private int SaveClient(Session session, Guid clientGuid)
+        {
+            // See if the client already exists.
+            int clientId = 0;
+            session.Command.CommandText = "SELECT ClientId FROM Client WHERE ClientGuid = @ClientGuid";
+            AddParameter(session.Command, "@ClientGuid", clientGuid);
+            using (IDataReader typeReader = session.Command.ExecuteReader())
+            {
+                session.Command.Parameters.Clear();
+                if (typeReader.Read())
+                {
+                    clientId = typeReader.GetInt32(0);
+                }
+            }
+
+            // If not, create it.
+            if (clientId == 0)
+            {
+                session.Command.CommandText = "INSERT INTO Client (ClientGuid) VALUES (@ClientGuid)";
+                AddParameter(session.Command, "@ClientGuid", clientGuid);
+                session.Command.ExecuteNonQuery();
+                session.Command.Parameters.Clear();
+
+                session.Command.CommandText = "SELECT @@IDENTITY";
+                clientId = (int)(decimal)session.Command.ExecuteScalar();
+                session.Command.Parameters.Clear();
+            }
+
+            return clientId;
         }
 
         private static void ReadBinary(IDataReader reader, FactMemento memento, int columnIndex)

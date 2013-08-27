@@ -1,4 +1,5 @@
-﻿using UpdateControls.Correspondence.Mementos;
+﻿using System;
+using UpdateControls.Correspondence.Mementos;
 
 namespace Correspondence.Distributor.Test.Records
 {
@@ -7,9 +8,9 @@ namespace Correspondence.Distributor.Test.Records
         private MessageMemento _message;
         private FactID _ancestorFact;
         private RoleMemento _ancestorRole;
-        private readonly string _source;
+        private readonly Guid _source;
         
-        public MessageRecord(MessageMemento message, FactID ancestorFact, RoleMemento ancestorRole, string source)
+        public MessageRecord(MessageMemento message, FactID ancestorFact, RoleMemento ancestorRole, Guid source)
         {
             _message = message;
             _ancestorFact = ancestorFact;
@@ -32,7 +33,7 @@ namespace Correspondence.Distributor.Test.Records
             get { return _ancestorRole; }
         }
 
-        public string Source
+        public Guid Source
         {
             get { return _source; }
         }

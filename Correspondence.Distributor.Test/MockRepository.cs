@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Correspondence.Distributor.Test.Records;
@@ -25,7 +26,7 @@ namespace Correspondence.Distributor.Test
             }
         }
 
-        public FactID Save(string domain, FactMemento fact, string clientGuid)
+        public FactID Save(string domain, FactMemento fact, Guid clientGuid)
         {
             FactID factId;
             List<FactID> affectedPivots;
@@ -108,7 +109,7 @@ namespace Correspondence.Distributor.Test
             }
         }
 
-        public List<FactID> LoadRecentMessages(string domain, FactID localPivotId, string clientGuid, TimestampID timestamp)
+        public List<FactID> LoadRecentMessages(string domain, FactID localPivotId, Guid clientGuid, TimestampID timestamp)
         {
             return _messageTable.Where(message => message.Message.PivotId.Equals(localPivotId) && message.Message.FactId.key > timestamp.Key && message.Source != clientGuid).Select(message => message.Message.FactId).Distinct()
                 .ToList();

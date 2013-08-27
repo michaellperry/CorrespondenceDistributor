@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UpdateControls.Correspondence.Mementos;
@@ -11,7 +12,7 @@ namespace Correspondence.Distributor
         {
             public string Domain;
             public FactID PivotId;
-            public string ClientGuid;
+            public Guid ClientGuid;
             public CancellationTokenSource Cancellation;
         }
         private List<Registration> _registrations = new List<Registration>();
@@ -20,7 +21,7 @@ namespace Correspondence.Distributor
         public void Register(
             string domain,
             List<FactID> pivotIds,
-            string clientGuid,
+            Guid clientGuid,
             CancellationTokenSource cancellation)
         {
             lock (this)
@@ -46,7 +47,7 @@ namespace Correspondence.Distributor
             }
         }
 
-        public void Notify(string domain, string clientGuid)
+        public void Notify(string domain, Guid clientGuid)
         {
             List<Registration> registrations;
             lock (this)

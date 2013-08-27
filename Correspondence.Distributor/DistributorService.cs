@@ -20,7 +20,7 @@ namespace Correspondence.Distributor
         }
 
         public Task<GetManyResult> GetManyAsync(
-            string clientGuid,
+            Guid clientGuid,
             string domain,
             FactTreeMemento tree,
             Dictionary<long, long> pivotIds,
@@ -47,7 +47,7 @@ namespace Correspondence.Distributor
             return Task.FromResult(result);
         }
 
-        private GetManyResult GetManyInternal(string clientGuid, string domain, FactTreeMemento tree, Dictionary<long, long> pivotIds)
+        private GetManyResult GetManyInternal(Guid clientGuid, string domain, FactTreeMemento tree, Dictionary<long, long> pivotIds)
         {
             var localPivotIds = new List<FactID>();
             FactTreeMemento messageBody = new FactTreeMemento(0);
@@ -84,7 +84,7 @@ namespace Correspondence.Distributor
         }
 
         public void Post(
-            string clientGuid,
+            Guid clientGuid,
             string domain,
             FactTreeMemento factTree,
             List<UnpublishMemento> unpublishMessages)
@@ -93,14 +93,14 @@ namespace Correspondence.Distributor
         }
 
         public void Interrupt(
-            string clientGuid,
+            Guid clientGuid,
             string domain)
         {
             _messageBus.Notify(domain, clientGuid);
         }
 
         public void Notify(
-            string clientGuid,
+            Guid clientGuid,
             string domain,
             FactTreeMemento pivotTree,
             long pivotId,
@@ -111,7 +111,7 @@ namespace Correspondence.Distributor
         }
 
         public void WindowsSubscribe(
-            string clientGuid,
+            Guid clientGuid,
             string domain,
             FactTreeMemento pivotTree,
             long pivotId,

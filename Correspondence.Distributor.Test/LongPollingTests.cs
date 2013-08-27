@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,6 +11,9 @@ namespace Correspondence.Distributor.Test
     [TestClass]
     public class LongPollingTests : TestBase
     {
+        private static readonly Guid ClientGuid1 = Guid.Parse("{23EBD408-FDB3-402A-B10A-439240971BA8}");
+        private static readonly Guid ClientGuid2 = Guid.Parse("{BF2C8CD0-57F0-4E5B-9DE6-E75CF4C23017}");
+
         private DistributorService _service;
 
         [TestInitialize]
@@ -44,7 +48,7 @@ namespace Correspondence.Distributor.Test
         {
             Task<GetManyResult> task = GetFromClient1();
 
-            _service.Interrupt("clientGuid1", "domain");
+            _service.Interrupt(ClientGuid1, "domain");
 
             GetManyResult result = Fast(task);
             Assert.AreEqual(0, result.Tree.Facts.Count());
@@ -58,8 +62,8 @@ namespace Correspondence.Distributor.Test
                 CreateDomain()));
             Dictionary<long, long> pivotIds = new Dictionary<long, long>();
             pivotIds[4124] = 0;
-            _service.Post("clientGuid1", "domain", tree, new List<UnpublishMemento>());
-            return _service.GetManyAsync("clientGuid1", "domain", tree, pivotIds, 1);
+            _service.Post(ClientGuid1, "domain", tree, new List<UnpublishMemento>());
+            return _service.GetManyAsync(ClientGuid1, "domain", tree, pivotIds, 1);
         }
 
         private void PostFromClient2()
@@ -71,7 +75,7 @@ namespace Correspondence.Distributor.Test
             tree.Add(new IdentifiedFactMemento(
                 new FactID { key = 13 },
                 CreateRoom(12)));
-            _service.Post("clientGuid2", "domain", tree, new List<UnpublishMemento>());
+            _service.Post(ClientGuid2, "domain", tree, new List<UnpublishMemento>());
         }
 
         private static GetManyResult Slow(Task<GetManyResult> task)
