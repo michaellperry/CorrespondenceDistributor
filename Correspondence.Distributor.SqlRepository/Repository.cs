@@ -15,7 +15,7 @@ namespace Correspondence.Distributor.SqlRepository
     public class Repository : IRepository
     {
         private const string PRE_HEAD_SELECT =
-            "SELECT ff.FactID, ff.Data, t.TypeID, t.TypeName, t.Version, r.RoleID, dt.TypeID, dt.TypeName, dt.Version, r.RoleName, p.FKPredecessorFactID, p.IsPivot " +
+            "SELECT ff.FactID, ff.Data, t.TypeName, t.Version, dt.TypeName, dt.Version, r.RoleName, p.FKPredecessorFactID, p.IsPivot " +
             "\r\nFROM (SELECT ";
         private const string POST_HEAD_SELECT =
             "f.FactID, f.Data, f.FKTypeID FROM Fact f ";
@@ -38,7 +38,26 @@ namespace Correspondence.Distributor.SqlRepository
 
         public FactMemento Load(string domain, FactID factId)
         {
-            throw new NotImplementedException();
+            IdentifiedFactMemento identifiedMemento = null;
+
+            using (var session = new Session(_connectionString))
+            {
+                // Get the fact.
+                session.Command.CommandText = HEAD_SELECT +
+                    "WHERE f.FactID = @FactID " +
+                    TAIL_JOIN +
+                    "ORDER BY p.PredecessorID";
+                AddParameter(session.Command, "@FactID", factId.key);
+                using (IDataReader reader = session.Command.ExecuteReader())
+                {
+                    session.Command.Parameters.Clear();
+                    identifiedMemento = LoadMementosFromReader(reader).FirstOrDefault();
+                    if (identifiedMemento == null)
+                        throw new CorrespondenceException(string.Format("Unable to find fact {0}", factId.key));
+                }
+            }
+
+            return identifiedMemento.Memento;
         }
 
         public FactID Save(string domain, FactMemento fact, Guid clientGuid)
@@ -202,7 +221,7 @@ namespace Correspondence.Distributor.SqlRepository
 
             while (factReader.Read())
             {
-                // FactID, Data, TypeID, TypeName, Version, RoleID, DeclaringTypeID, DeclaringTypeName, DeclaringTypeVersion, RoleName, PredecessorFactID
+                // FactID, Data, TypeName, Version, DeclaringTypeName, DeclaringTypeVersion, RoleName, PredecessorFactID, IsPivot
                 long factId = factReader.GetInt64(0);
 
                 // Load the header.
@@ -211,30 +230,33 @@ namespace Correspondence.Distributor.SqlRepository
                     if (current != null)
                         yield return current;
 
-                    int typeId = factReader.GetInt32(2);
-                    string typeName = factReader.GetString(3);
-                    int typeVersion = factReader.GetInt32(4);
+                    string typeName = factReader.GetString(2);
+                    int typeVersion = factReader.GetInt32(3);
 
                     // Create the memento.
                     current = new IdentifiedFactMemento(
                         new FactID() { key = factId },
-                        new FactMemento(GetTypeMemento(typeId, typeName, typeVersion)));
+                        new FactMemento(new CorrespondenceFactType(typeName, typeVersion)));
                     ReadBinary(factReader, current.Memento, 1);
                 }
 
                 // Load a predecessor.
-                if (!factReader.IsDBNull(5))
+                if (!factReader.IsDBNull(4))
                 {
-                    int roleId = factReader.GetInt32(5);
-                    int declaringTypeId = factReader.GetInt32(6);
-                    string declaringTypeName = factReader.GetString(7);
-                    int declaringTypeVersion = factReader.GetInt32(8);
-                    string roleName = factReader.GetString(9);
-                    long predecessorFactId = factReader.GetInt64(10);
-                    bool isPivot = factReader.GetBoolean(11);
+                    string declaringTypeName = factReader.GetString(4);
+                    int declaringTypeVersion = factReader.GetInt32(5);
+                    string roleName = factReader.GetString(6);
+                    long predecessorFactId = factReader.GetInt64(7);
+                    bool isPivot = factReader.GetBoolean(8);
 
                     current.Memento.AddPredecessor(
-                        GetRoleMemento(roleId, declaringTypeId, declaringTypeName, declaringTypeVersion, roleName),
+                        new RoleMemento(
+                            new CorrespondenceFactType(
+                                declaringTypeName,
+                                declaringTypeVersion),
+                            roleName,
+                            null,
+                            false),
                         new FactID() { key = predecessorFactId },
                         isPivot);
                 }
@@ -363,22 +385,6 @@ namespace Correspondence.Distributor.SqlRepository
             param.ParameterName = name;
             param.Value = value;
             command.Parameters.Add(param);
-        }
-
-        private CorrespondenceFactType GetTypeMemento(int typeId, string typeName, int typeVersion)
-        {
-            return new CorrespondenceFactType(typeName, typeVersion);
-        }
-
-        private RoleMemento GetRoleMemento(int roleId, int declaringTypeId, string declaringTypeTypeName, int declaringTypeVersion, string roleName)
-        {
-            return new RoleMemento(
-                new CorrespondenceFactType(
-                    declaringTypeTypeName,
-                    declaringTypeVersion),
-                roleName,
-                null,
-                false);
         }
 
         public Repository UpgradeDatabase()

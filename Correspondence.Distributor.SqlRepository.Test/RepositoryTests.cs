@@ -105,6 +105,18 @@ namespace Correspondence.Distributor.SqlRepository.Test
             Assert.AreEqual(0, messages.Count);
         }
 
+        [TestMethod]
+        public void CanLoadAFact()
+        {
+            Guid gameGuid = Guid.NewGuid();
+            var game = NewGame(gameGuid);
+            FactID gameId = _repository.Save(TestDomain, game, TestClient);
+
+            var loadedGame = _repository.Load(TestDomain, gameId);
+
+            Assert.AreEqual(game, loadedGame);
+        }
+
         private static FactMemento NewGame(Guid gameGuid)
         {
             FactMemento saveGame = new FactMemento(GameType);
