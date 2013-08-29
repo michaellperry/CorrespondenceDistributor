@@ -13,11 +13,16 @@ namespace Correspondence.Distributor.Web
             public byte[] Data { get; set; }
         }
 
-        private RequestProcessor _requestProcessor;
+        private static RequestProcessor _requestProcessor;
 
-        public BinaryHttpHandler()
+        static BinaryHttpHandler()
         {
             _requestProcessor = new RequestProcessor(new Repository("Correspondence"));
+        }
+
+        public override bool IsReusable
+        {
+            get { return true; }
         }
 
         public override async Task ProcessRequestAsync(HttpContext context)
