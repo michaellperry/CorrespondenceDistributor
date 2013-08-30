@@ -44,9 +44,10 @@ namespace Correspondence.Distributor.Test
 
             var result = _service.GetManyAsync(ClientGuid1, "domain", tree, pivotIds, 0).Result.Tree;
             Assert.AreEqual(2, result.Facts.Count());
-            IdentifiedFactRemote resultDomain = (IdentifiedFactRemote)result.Facts.ElementAt(0);
+            IdentifiedFactMemento resultDomain = (IdentifiedFactMemento)result.Facts.ElementAt(0);
             IdentifiedFactMemento resultRoom = (IdentifiedFactMemento)result.Facts.ElementAt(1);
-            Assert.AreEqual(4124, resultDomain.RemoteId.key);
+            Assert.AreEqual(TypeDomain, resultDomain.Memento.FactType);
+            Assert.IsFalse(resultDomain.Memento.Predecessors.Any());
             Assert.AreEqual(TypeRoom, resultRoom.Memento.FactType);
             Assert.AreEqual(resultDomain.Id, resultRoom.Memento.Predecessors.ElementAt(0).ID);
             Assert.AreEqual(roomId, pivotIds[4124]);
@@ -90,9 +91,10 @@ namespace Correspondence.Distributor.Test
             var result = _service.GetManyAsync(ClientGuid2, "domain", getTree, pivotIds, 0).Result.Tree;
 
             Assert.AreEqual(2, result.Facts.Count());
-            IdentifiedFactRemote resultDomain = (IdentifiedFactRemote)result.Facts.ElementAt(0);
+            IdentifiedFactMemento resultDomain = (IdentifiedFactMemento)result.Facts.ElementAt(0);
             IdentifiedFactMemento resultRoom = (IdentifiedFactMemento)result.Facts.ElementAt(1);
-            Assert.AreEqual(9898, resultDomain.RemoteId.key);
+            Assert.AreEqual(TypeDomain, resultDomain.Memento.FactType);
+            Assert.IsFalse(resultDomain.Memento.Predecessors.Any());
             Assert.AreEqual(TypeRoom, resultRoom.Memento.FactType);
             Assert.AreEqual(resultDomain.Id, resultRoom.Memento.Predecessors.ElementAt(0).ID);
         }
