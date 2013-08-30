@@ -17,7 +17,8 @@ namespace Correspondence.Distributor.Web
 
         static BinaryHttpHandler()
         {
-            _requestProcessor = new RequestProcessor(new Repository("Correspondence"));
+            _requestProcessor = new RequestProcessor(new Repository("Correspondence")
+                .UpgradeDatabase());
         }
 
         public override bool IsReusable
