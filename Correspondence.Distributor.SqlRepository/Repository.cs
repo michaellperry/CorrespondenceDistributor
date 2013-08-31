@@ -66,7 +66,7 @@ namespace Correspondence.Distributor.SqlRepository
 
         public FactID Save(string domain, FactMemento fact, Guid clientGuid)
         {
-            // Retry on deadlock.
+            // Retry on concurrency failure.
             while (true)
             {
                 using (var session = new Session(_connectionString))
@@ -142,16 +142,16 @@ namespace Correspondence.Distributor.SqlRepository
                     var messages = pivotMessages.Union(nonPivotMessages).Distinct().ToList();
                     SaveMessages(session, messages, clientId);
 
-                    if (messages.Any() && PivotAffected != null)
-                        foreach (var message in messages)
-                            PivotAffected(domain, message.PivotId);
-
                     // Optimistic concurrency check.
                     // Make sure we don't find more than one.
                     var existingFacts = FindExistingFacts(fact, session, readCommitted: false);
                     if (existingFacts.Count == 1)
                     {
                         session.Commit();
+
+                        if (messages.Any() && PivotAffected != null)
+                            foreach (var message in messages)
+                                PivotAffected(domain, message.PivotId);
                         return id;
                     }
                     else
