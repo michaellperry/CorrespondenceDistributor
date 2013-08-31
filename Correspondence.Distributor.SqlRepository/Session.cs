@@ -2,7 +2,6 @@ using System;
 using System.Configuration;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 
 namespace Correspondence.Distributor.SqlRepository
 {
@@ -10,6 +9,7 @@ namespace Correspondence.Distributor.SqlRepository
     {
         private IDbConnection _connection;
         private IDbCommand _command;
+        private IDbTransaction _transaction;
 
         public Session(string connectionString)
         {
@@ -18,19 +18,42 @@ namespace Correspondence.Distributor.SqlRepository
             _connection = factory.CreateConnection();
             _connection.ConnectionString = settings.ConnectionString;
             _connection.Open();
-
-            _command = _connection.CreateCommand();
         }
 
         public IDbCommand Command
         {
-            get { return _command; }
+            get
+            {
+                if (_command == null)
+                {
+                    _command = _connection.CreateCommand();
+                    if (_transaction != null)
+                        _command.Transaction = _transaction;
+                }
+
+                return _command;
+            }
+        }
+
+        public void BeginTransaction()
+        {
+            if (_transaction == null)
+                _transaction = _connection.BeginTransaction(IsolationLevel.ReadCommitted);
+        }
+
+        public void Commit()
+        {
+            if (_transaction != null)
+                _transaction.Commit();
         }
 
         public void Dispose()
         {
             if (_command != null)
                 _command.Dispose();
+
+            if (_transaction != null)
+                _transaction.Dispose();
 
             _connection.Close();
         }
