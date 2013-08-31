@@ -139,7 +139,12 @@ namespace Correspondence.Distributor.SqlRepository
                         nonPivotMessages = new List<MessageMemento>();
 
                     int clientId = SaveClient(session, clientGuid);
-                    SaveMessages(session, pivotMessages.Union(nonPivotMessages).Distinct(), clientId);
+                    var messages = pivotMessages.Union(nonPivotMessages).Distinct().ToList();
+                    SaveMessages(session, messages, clientId);
+
+                    if (messages.Any() && PivotAffected != null)
+                        foreach (var message in messages)
+                            PivotAffected(domain, message.PivotId);
 
                     // Optimistic concurrency check.
                     // Make sure we don't find more than one.
