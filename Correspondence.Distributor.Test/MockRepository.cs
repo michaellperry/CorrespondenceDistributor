@@ -115,13 +115,14 @@ namespace Correspondence.Distributor.Test
                 .ToList();
         }
 
-        public event Delegates.PivotAffectedDelegate PivotAffected;
-
-        private void Unpublish(FactID factId, RoleMemento role)
+        public void DeleteMessages(string domain, List<UnpublishMemento> unpublishMementos)
         {
             _messageTable.RemoveAll(message =>
-                message.AncestorFact.Equals(factId) &&
-                message.AncestorRole.Equals(role));
+                unpublishMementos.Any(unpublish =>
+                    message.AncestorFact.Equals(unpublish.MessageId) &&
+                    message.AncestorRole.Equals(unpublish.Role)));
         }
+
+        public event Delegates.PivotAffectedDelegate PivotAffected;
     }
 }

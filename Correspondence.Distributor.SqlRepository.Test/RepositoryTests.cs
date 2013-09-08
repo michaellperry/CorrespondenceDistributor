@@ -117,6 +117,27 @@ namespace Correspondence.Distributor.SqlRepository.Test
             Assert.AreEqual(game, loadedGame);
         }
 
+        [TestMethod]
+        public void CanUnpublishAFact()
+        {
+            Guid gameGuid = Guid.NewGuid();
+            var game = NewGame(gameGuid);
+            FactID gameId = _repository.Save(TestDomain, game, TestClient);
+
+            var move = NewMove(gameId, 1);
+            FactID moveId = _repository.Save(TestDomain, move, TestClient);
+
+            _repository.DeleteMessages(TestDomain, new List<UnpublishMemento>
+            {
+                new UnpublishMemento(moveId, MoveGame)
+            });
+
+            List<FactID> messages = _repository.LoadRecentMessages(
+                TestDomain, gameId, AnotherClient, new TimestampID(0, 0));
+
+            Assert.AreEqual(0, messages.Count);
+        }
+
         private static FactMemento NewGame(Guid gameGuid)
         {
             FactMemento saveGame = new FactMemento(GameType);

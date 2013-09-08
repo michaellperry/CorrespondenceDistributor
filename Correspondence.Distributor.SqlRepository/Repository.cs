@@ -65,9 +65,15 @@ namespace Correspondence.Distributor.SqlRepository
 
                     // Store a message for each pivot.
                     FactID newFactId = id;
-                    List<MessageMemento> pivotMessages = fact.Predecessors
+                    List<AncestorMessage> pivotMessages = fact.Predecessors
                         .Where(predecessor => predecessor.IsPivot)
-                        .Select(predecessor => new MessageMemento(predecessor.ID, newFactId))
+                        .Select(predecessor =>
+                            new AncestorMessage
+                            {
+                                AncestorFactId = newFactId,
+                                AncestorRoleId = SaveRole(procedures, predecessor.Role),
+                                Message = new MessageMemento(predecessor.ID, newFactId)
+                            })
                         .ToList();
 
                     // Store messages for each non-pivot. This fact belongs to all predecessors' pivots.
@@ -75,20 +81,26 @@ namespace Correspondence.Distributor.SqlRepository
                         .Where(predecessor => !predecessor.IsPivot)
                         .Select(predecessor => predecessor.ID.key.ToString())
                         .ToArray();
-                    List<MessageMemento> nonPivotMessages;
+                    List<AncestorMessage> nonPivotMessages;
                     if (nonPivots.Length > 0)
                     {
-                        List<FactID> predecessorsPivots = procedures.GetPredecessorsPivots(nonPivots);
-                        nonPivotMessages = predecessorsPivots
-                            .Select(predecessorPivot => new MessageMemento(predecessorPivot, newFactId))
+                        var predecessorsPivotRoles = procedures.GetAncestorPivots(nonPivots);
+                        nonPivotMessages = predecessorsPivotRoles
+                            .Select(predecessorPivot =>
+                                new AncestorMessage
+                                {
+                                    AncestorFactId = predecessorPivot.AncestorFactId,
+                                    AncestorRoleId = predecessorPivot.AncestorRoleId,
+                                    Message = new MessageMemento(predecessorPivot.PivotId, newFactId)
+                                })
                             .ToList();
                     }
                     else
-                        nonPivotMessages = new List<MessageMemento>();
+                        nonPivotMessages = new List<AncestorMessage>();
 
                     int clientId = SaveClient(procedures, clientGuid);
-                    var messages = pivotMessages.Union(nonPivotMessages).Distinct().ToList();
-                    procedures.InsertMessages(messages, clientId);
+                    var roleMessages = pivotMessages.Union(nonPivotMessages).Distinct().ToList();
+                    procedures.InsertMessages(roleMessages, clientId);
 
                     // Optimistic concurrency check.
                     // Make sure we don't find more than one.
@@ -97,9 +109,9 @@ namespace Correspondence.Distributor.SqlRepository
                     {
                         procedures.Commit();
 
-                        if (messages.Any() && PivotAffected != null)
-                            foreach (var message in messages)
-                                PivotAffected(domain, message.PivotId);
+                        if (roleMessages.Any() && PivotAffected != null)
+                            foreach (var roleMessage in roleMessages)
+                                PivotAffected(domain, roleMessage.Message.PivotId);
                         return id;
                     }
                     else
@@ -127,6 +139,18 @@ namespace Correspondence.Distributor.SqlRepository
             {
                 int clientId = SaveClient(procedures, clientGuid);
                 return procedures.GetRecentMessages(pivotId, timestamp, clientId);
+            }
+        }
+
+        public void DeleteMessages(string domain, List<UnpublishMemento> unpublishMementos)
+        {
+            using (var procedures = new Procedures(new Session(_connectionString)))
+            {
+                foreach (var unpublish in unpublishMementos)
+                {
+                    int roleId = SaveRole(procedures, unpublish.Role);
+                    procedures.DeleteMessage(unpublish.MessageId, roleId);
+                }
             }
         }
 

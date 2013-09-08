@@ -90,7 +90,19 @@ namespace Correspondence.Distributor
             FactTreeMemento factTree,
             List<UnpublishMemento> unpublishMessages)
         {
-            ForEachFact(factTree, fact => _repository.Save(domain, fact, clientGuid));
+            Dictionary<FactID, FactID> localIdByRemoteId = ForEachFact(factTree,
+                fact => _repository.Save(domain, fact, clientGuid));
+            var unpublishMementos = unpublishMessages
+                .SelectMany(m => MapUnpublishMemento(localIdByRemoteId, m))
+                .ToList();
+            _repository.DeleteMessages(domain, unpublishMementos);
+        }
+
+        private IEnumerable<UnpublishMemento> MapUnpublishMemento(Dictionary<FactID, FactID> localIdByRemoteId, UnpublishMemento remoteUnpublish)
+        {
+            FactID localId;
+            if (localIdByRemoteId.TryGetValue(remoteUnpublish.MessageId, out localId))
+                yield return new UnpublishMemento(localId, remoteUnpublish.Role);
         }
 
         public void Interrupt(

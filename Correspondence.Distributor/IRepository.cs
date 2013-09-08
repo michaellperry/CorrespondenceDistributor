@@ -12,5 +12,6 @@ namespace Correspondence.Distributor
         FactID Save(string domain, FactMemento fact, Guid clientGuid);
         FactID? FindExistingFact(string domain, FactMemento fact);
         List<FactID> LoadRecentMessages(string domain, FactID pivotId, Guid clientGuid, TimestampID timestamp);
+        void DeleteMessages(string domain, List<UnpublishMemento> unpublishMementos);
     }
 }

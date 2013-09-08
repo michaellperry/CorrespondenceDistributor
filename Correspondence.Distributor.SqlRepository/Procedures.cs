@@ -53,16 +53,17 @@ namespace Correspondence.Distributor.SqlRepository
             return new FactID { key = (Int64)result };
         }
 
-        public List<FactID> GetPredecessorsPivots(string[] nonPivots)
+        public List<AncestorPivot> GetAncestorPivots(string[] nonPivots)
         {
             string nonPivotGroup = string.Join(",", nonPivots);
             _session.Command.CommandText = string.Format(
-                "SELECT DISTINCT PivotId FROM Message WHERE FactId IN ({0})",
+                "SELECT DISTINCT AncestorFactId, AncestorRoleId, PivotId FROM Message " +
+                    "WHERE FactId IN ({0})",
                 nonPivotGroup);
             using (var loader = new Loader(_session.Command.ExecuteReader()))
             {
                 _session.Command.Parameters.Clear();
-                return loader.LoadIDs().ToList();
+                return loader.LoadAncestorPivots().ToList();
             }
         }
 
@@ -116,17 +117,30 @@ namespace Correspondence.Distributor.SqlRepository
             }
         }
 
-        public void InsertMessages(IEnumerable<MessageMemento> messages, int clientId)
+        public void InsertMessages(IEnumerable<AncestorMessage> roleMessages, int clientId)
         {
-            _session.Command.CommandText = "INSERT INTO Message (FactId, PivotId, ClientId) VALUES (@FactId, @PivotId, @ClientId)";
-            foreach (MessageMemento message in messages)
+            _session.Command.CommandText = "INSERT INTO Message (FactId, PivotId, ClientId, AncestorFactId, AncestorRoleId) " +
+                "VALUES (@FactId, @PivotId, @ClientId, @AncestorFactId, @AncestorRoleId)";
+            foreach (AncestorMessage roleMessage in roleMessages)
             {
-                AddParameter("@FactId", message.FactId.key);
-                AddParameter("@PivotId", message.PivotId.key);
+                AddParameter("@FactId", roleMessage.Message.FactId.key);
+                AddParameter("@PivotId", roleMessage.Message.PivotId.key);
                 AddParameter("@ClientId", clientId);
+                AddParameter("@AncestorFactId", roleMessage.AncestorFactId.key);
+                AddParameter("@AncestorRoleId", roleMessage.AncestorRoleId);
                 _session.Command.ExecuteNonQuery();
                 _session.Command.Parameters.Clear();
             }
+        }
+
+        public void DeleteMessage(FactID ancestorFactId, int ancestorRoleId)
+        {
+            _session.Command.CommandText = "DELETE FROM Message " +
+                "WHERE AncestorFactId = @AncestorFactId AND AncestorRoleId = @AncestorRoleId";
+            AddParameter("@AncestorFactId", ancestorFactId.key);
+            AddParameter("@AncestorRoleId", ancestorRoleId);
+            _session.Command.ExecuteNonQuery();
+            _session.Command.Parameters.Clear();
         }
 
         public int GetRoleId(RoleMemento roleMemento, int declaringTypeId)

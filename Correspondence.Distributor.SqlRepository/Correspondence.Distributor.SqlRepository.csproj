@@ -53,9 +53,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Loader.cs" />
+    <Compile Include="AncestorPivot.cs" />
     <Compile Include="Procedures.cs" />
     <Compile Include="Repository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="AncestorMessage.cs" />
     <Compile Include="ScriptRunner.cs" />
     <Compile Include="Session.cs" />
   </ItemGroup>
@@ -68,7 +70,9 @@
       <Name>Correspondence.Distributor</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\Correspondence.2.sql" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\Correspondence.0.sql" />
     <EmbeddedResource Include="Scripts\Correspondence.1.sql" />

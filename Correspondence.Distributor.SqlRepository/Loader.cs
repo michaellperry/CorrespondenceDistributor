@@ -71,6 +71,22 @@ namespace Correspondence.Distributor.SqlRepository
                 yield return new FactID() { key = _reader.GetInt64(0) };
         }
 
+        public IEnumerable<AncestorPivot> LoadAncestorPivots()
+        {
+            while (_reader.Read())
+            {
+                long ancestorFactId = _reader.GetInt64(0);
+                int ancestorRoleId = _reader.GetInt32(1);
+                long pivotId = _reader.GetInt64(2);
+                yield return new AncestorPivot
+                {
+                    AncestorFactId = new FactID { key = ancestorFactId },
+                    AncestorRoleId = ancestorRoleId,
+                    PivotId = new FactID { key = pivotId },
+                };
+            }
+        }
+
         private void ReadBinary(FactMemento memento, int columnIndex)
         {
             byte[] buffer = new byte[1024];
