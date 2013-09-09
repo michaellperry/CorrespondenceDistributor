@@ -252,6 +252,62 @@ namespace Correspondence.Distributor.SqlRepository
             return clientId;
         }
 
+        public void InsertWindowsPhoneSubscriptions(
+            IEnumerable<FactID> pivotIds, 
+            string deviceUri, 
+            int clientId)
+        {
+            _session.Command.CommandText =
+                "MERGE WindowsPhoneSubscription s " +
+                "USING (SELECT @PivotFactID as PivotFactID, @DeviceUri as DeviceUri) as n " +
+                "ON n.PivotFactID = s.PivotFactID AND n.DeviceUri = s.DeviceUri " +
+                "WHEN NOT MATCHED THEN " +
+                "INSERT (PivotFactID, DeviceUri, ClientID) " +
+                "VALUES (n.PivotFactID, n.DeviceUri, @ClientID);";
+            foreach (var pivotId in pivotIds)
+            {
+                AddParameter("@PivotFactId", pivotId.key);
+                AddParameter("@DeviceUri", deviceUri);
+                AddParameter("@ClientId", clientId);
+                _session.Command.ExecuteNonQuery();
+                _session.Command.Parameters.Clear();
+            }
+        }
+
+        public List<WindowsPhoneSubscription> GetWindowsPhoneSubscriptionsByPivot(
+            IEnumerable<FactID> pivotIds, int clientId)
+        {
+            string pivotIdGroup = string.Join(",", pivotIds
+                .Select(id => id.key.ToString())
+                .ToArray());
+            _session.Command.CommandText = string.Format(
+                "SELECT PivotFactId, DeviceUri " +
+                "FROM WindowsPhoneSubscription " +
+                "WHERE PivotFactId IN ({0}) " +
+                "AND ClientId != @ClientId",
+                pivotIdGroup);
+            AddParameter("@ClientId", clientId);
+            using (var loader = new Loader(_session.Command.ExecuteReader()))
+            {
+                return loader.LoadWindowsPhoneSubscriptions().ToList();
+            }
+        }
+
+        public void DeleteWindowsPhoneSubscriptions(
+            IEnumerable<FactID> pivotIds, string deviceUri)
+        {
+            string pivotIdGroup = string.Join(",", pivotIds
+                .Select(id => id.key.ToString())
+                .ToArray());
+            _session.Command.CommandText = string.Format(
+                "DELETE WindowsPhoneSubscription " +
+                "WHERE PivotFactId IN ({0}) " +
+                "AND DeviceUri = @DeviceUri",
+                pivotIdGroup);
+            AddParameter("@DeviceUri", deviceUri);
+            _session.Command.ExecuteNonQuery();
+        }
+
         private void AddParameter(string name, object value)
         {
             var param = _session.Command.CreateParameter();

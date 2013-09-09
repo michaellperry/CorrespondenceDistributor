@@ -64,7 +64,7 @@ namespace Correspondence.Distributor.BinaryHttp
             BinaryHelper.WriteByte(Token, requestWriter);
         }
     }
-    public class WindowsSubscribeResponse : BinaryResponse
+    public class WindowsPhoneSubscribeResponse : BinaryResponse
     {
         public static byte Token = 7;
 
@@ -73,7 +73,7 @@ namespace Correspondence.Distributor.BinaryHttp
             BinaryHelper.WriteByte(Token, requestWriter);
         }
     }
-    public class WindowsUnsubscribeResponse : BinaryResponse
+    public class WindowsPhoneUnsubscribeResponse : BinaryResponse
     {
         public static byte Token = 8;
 

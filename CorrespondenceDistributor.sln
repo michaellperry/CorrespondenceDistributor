@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Correspondence.Distributor.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Correspondence.Distributor.WindowsPhone", "Correspondence.Distributor.WindowsPhone\Correspondence.Distributor.WindowsPhone.csproj", "{9BE1590B-DDA1-4E50-A78A-F7B7185A1795}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Correspondence.Distributor.WindowsPhone.SqlRepository", "Correspondence.Distributor.WindowsPhone.SqlRepository\Correspondence.Distributor.WindowsPhone.SqlRepository.csproj", "{46F1C75C-2F9B-46DA-B714-C7E9B9194D7A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Correspondence.Distributor", "Correspondence.Distributor\Correspondence.Distributor.csproj", "{F76AE044-785D-4612-98BE-8FEB4A4DE4C5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Correspondence.Distributor.Web", "Correspondence.Distributor.Web\Correspondence.Distributor.Web.csproj", "{BD839AA5-85C4-4216-8385-7E8517917B0A}"
@@ -44,10 +42,6 @@ Global
 		{9BE1590B-DDA1-4E50-A78A-F7B7185A1795}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BE1590B-DDA1-4E50-A78A-F7B7185A1795}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9BE1590B-DDA1-4E50-A78A-F7B7185A1795}.Release|Any CPU.Build.0 = Release|Any CPU
-		{46F1C75C-2F9B-46DA-B714-C7E9B9194D7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{46F1C75C-2F9B-46DA-B714-C7E9B9194D7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{46F1C75C-2F9B-46DA-B714-C7E9B9194D7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{46F1C75C-2F9B-46DA-B714-C7E9B9194D7A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F76AE044-785D-4612-98BE-8FEB4A4DE4C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F76AE044-785D-4612-98BE-8FEB4A4DE4C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F76AE044-785D-4612-98BE-8FEB4A4DE4C5}.Release|Any CPU.ActiveCfg = Release|Any CPU

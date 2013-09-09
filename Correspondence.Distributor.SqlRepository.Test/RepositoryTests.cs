@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UpdateControls.Correspondence.Mementos;
 using System.Collections.Generic;
+using Correspondence.Distributor.SqlRepository;
 
 namespace Correspondence.Distributor.SqlRepository.Test
 {
@@ -136,6 +137,89 @@ namespace Correspondence.Distributor.SqlRepository.Test
                 TestDomain, gameId, AnotherClient, new TimestampID(0, 0));
 
             Assert.AreEqual(0, messages.Count);
+        }
+
+        [TestMethod]
+        public void CanSaveAWindowsPhoneSubscription()
+        {
+            Guid gameGuid = Guid.NewGuid();
+            var game = NewGame(gameGuid);
+            FactID gameId = _repository.Save(TestDomain, game, TestClient);
+
+            List<FactID> pivotIds = new List<FactID> { gameId };
+            _repository.SaveWindowsPhoneSubscription(
+                pivotIds, 
+                "windows_phone_device_uri", 
+                TestClient);
+            List<WindowsPhoneSubscription> subscriptions = _repository.LoadWindowsPhoneSubscriptions(
+                pivotIds, AnotherClient);
+
+            Assert.AreEqual(1, subscriptions.Count);
+            Assert.AreEqual(gameId, subscriptions[0].PivotFactId);
+            Assert.AreEqual("windows_phone_device_uri", subscriptions[0].DeviceUri);
+        }
+
+        [TestMethod]
+        public void SaveWindowsPhoneSubscriptionIsIdempotent()
+        {
+            Guid gameGuid = Guid.NewGuid();
+            var game = NewGame(gameGuid);
+            FactID gameId = _repository.Save(TestDomain, game, TestClient);
+
+            List<FactID> pivotIds = new List<FactID> { gameId };
+            _repository.SaveWindowsPhoneSubscription(
+                pivotIds,
+                "windows_phone_device_uri",
+                TestClient);
+            _repository.SaveWindowsPhoneSubscription(
+                pivotIds,
+                "windows_phone_device_uri",
+                TestClient);
+            List<WindowsPhoneSubscription> subscriptions = _repository.LoadWindowsPhoneSubscriptions(
+                pivotIds, AnotherClient);
+
+            Assert.AreEqual(1, subscriptions.Count);
+            Assert.AreEqual(gameId, subscriptions[0].PivotFactId);
+            Assert.AreEqual("windows_phone_device_uri", subscriptions[0].DeviceUri);
+        }
+
+        [TestMethod]
+        public void DontReturnSubscriptionsFromYourself()
+        {
+            Guid gameGuid = Guid.NewGuid();
+            var game = NewGame(gameGuid);
+            FactID gameId = _repository.Save(TestDomain, game, TestClient);
+
+            List<FactID> pivotIds = new List<FactID> { gameId };
+            _repository.SaveWindowsPhoneSubscription(
+                pivotIds,
+                "windows_phone_device_uri",
+                TestClient);
+            List<WindowsPhoneSubscription> subscriptions = _repository.LoadWindowsPhoneSubscriptions(
+                pivotIds, TestClient);
+
+            Assert.AreEqual(0, subscriptions.Count);
+        }
+
+        [TestMethod]
+        public void CanDeleteWindowsPhoneSubscriptions()
+        {
+            Guid gameGuid = Guid.NewGuid();
+            var game = NewGame(gameGuid);
+            FactID gameId = _repository.Save(TestDomain, game, TestClient);
+
+            List<FactID> pivotIds = new List<FactID> { gameId };
+            _repository.SaveWindowsPhoneSubscription(
+                pivotIds,
+                "windows_phone_device_uri",
+                TestClient);
+            _repository.DeleteWindowsPhoneSubscriptions(
+                pivotIds,
+                "windows_phone_device_uri");
+            List<WindowsPhoneSubscription> subscriptions = _repository.LoadWindowsPhoneSubscriptions(
+                pivotIds, AnotherClient);
+
+            Assert.AreEqual(0, subscriptions.Count);
         }
 
         private static FactMemento NewGame(Guid gameGuid)

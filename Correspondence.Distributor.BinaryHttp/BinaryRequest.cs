@@ -24,10 +24,10 @@ namespace Correspondence.Distributor.BinaryHttp
                 return GetManyRequest.CreateAndRead(domain, requestReader);
             else if (token == PostResponse.Token)
                 return PostRequest.CreateAndRead(domain, requestReader);
-            else if (token == WindowsSubscribeRequest.Token)
-                return WindowsSubscribeRequest.CreateAndRead(domain, requestReader);
-            else if (token == WindowsUnsubscribeRequest.Token)
-                return WindowsUnsubscribeRequest.CreateAndRead(domain, requestReader);
+            else if (token == WindowsPhoneSubscribeRequest.Token)
+                return WindowsPhoneSubscribeRequest.CreateAndRead(domain, requestReader);
+            else if (token == WindowsPhoneUnsubscribeRequest.Token)
+                return WindowsPhoneUnsubscribeRequest.CreateAndRead(domain, requestReader);
             else if (token == InterruptRequest.Token)
                 return InterruptRequest.CreateAndRead(domain, requestReader);
             else if (token == NotifyRequest.Token)
@@ -162,7 +162,7 @@ namespace Correspondence.Distributor.BinaryHttp
             Text2 = BinaryHelper.ReadString(requestReader);
         }
     }
-    public class WindowsSubscribeRequest : BinaryRequest
+    public class WindowsPhoneSubscribeRequest : BinaryRequest
     {
         public static byte Token = 7;
 
@@ -171,9 +171,9 @@ namespace Correspondence.Distributor.BinaryHttp
         public string DeviceUri { get; set; }
         public Guid ClientGuid { get; set; }
 
-        public static WindowsSubscribeRequest CreateAndRead(string domain, BinaryReader requestReader)
+        public static WindowsPhoneSubscribeRequest CreateAndRead(string domain, BinaryReader requestReader)
         {
-            WindowsSubscribeRequest request = new WindowsSubscribeRequest();
+            WindowsPhoneSubscribeRequest request = new WindowsPhoneSubscribeRequest();
             request.ReadInternal(domain, requestReader);
             return request;
         }
@@ -187,7 +187,7 @@ namespace Correspondence.Distributor.BinaryHttp
             ClientGuid = Guid.Parse(BinaryHelper.ReadString(requestReader));
         }
     }
-    public class WindowsUnsubscribeRequest : BinaryRequest
+    public class WindowsPhoneUnsubscribeRequest : BinaryRequest
     {
         public static byte Token = 8;
 
@@ -195,9 +195,9 @@ namespace Correspondence.Distributor.BinaryHttp
         public long PivotId { get; set; }
         public string DeviceUri { get; set; }
 
-        public static WindowsUnsubscribeRequest CreateAndRead(string domain, BinaryReader requestReader)
+        public static WindowsPhoneUnsubscribeRequest CreateAndRead(string domain, BinaryReader requestReader)
         {
-            WindowsUnsubscribeRequest request = new WindowsUnsubscribeRequest();
+            WindowsPhoneUnsubscribeRequest request = new WindowsPhoneUnsubscribeRequest();
             request.ReadInternal(domain, requestReader);
             return request;
         }

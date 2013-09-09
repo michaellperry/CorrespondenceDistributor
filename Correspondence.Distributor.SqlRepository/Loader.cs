@@ -87,6 +87,20 @@ namespace Correspondence.Distributor.SqlRepository
             }
         }
 
+        public IEnumerable<WindowsPhoneSubscription> LoadWindowsPhoneSubscriptions()
+        {
+            while (_reader.Read())
+            {
+                long pivotFactId = _reader.GetInt64(0);
+                string deviceUri = _reader.GetString(1);
+                yield return new WindowsPhoneSubscription
+                {
+                    PivotFactId = new FactID { key = pivotFactId },
+                    DeviceUri = deviceUri
+                };
+            }
+        }
+
         private void ReadBinary(FactMemento memento, int columnIndex)
         {
             byte[] buffer = new byte[1024];

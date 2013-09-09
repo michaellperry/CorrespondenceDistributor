@@ -13,5 +13,15 @@ namespace Correspondence.Distributor
         FactID? FindExistingFact(string domain, FactMemento fact);
         List<FactID> LoadRecentMessages(string domain, FactID pivotId, Guid clientGuid, TimestampID timestamp);
         void DeleteMessages(string domain, List<UnpublishMemento> unpublishMementos);
+
+        void SaveWindowsPhoneSubscription(
+            IEnumerable<FactID> pivotIds,
+            string deviceUri,
+            Guid clientGuid);
+        List<WindowsPhoneSubscription> LoadWindowsPhoneSubscriptions(
+            IEnumerable<FactID> pivotIds,
+            Guid clientGuid);
+        void DeleteWindowsPhoneSubscriptions(
+            IEnumerable<FactID> pivotIds, string deviceUri);
     }
 }

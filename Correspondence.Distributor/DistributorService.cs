@@ -123,23 +123,40 @@ namespace Correspondence.Distributor
             throw new NotImplementedException();
         }
 
-        public void WindowsSubscribe(
+        public void WindowsPhoneSubscribe(
             Guid clientGuid,
             string domain,
-            FactTreeMemento pivotTree,
+            FactTreeMemento factTree,
             long pivotId,
             string deviceUri)
         {
-            throw new NotImplementedException();
+            Dictionary<FactID, FactID> localIdByRemoteId = ForEachFact(factTree,
+                fact => _repository.Save(domain, fact, clientGuid));
+            FactID localId;
+            if (localIdByRemoteId.TryGetValue(new FactID { key = pivotId }, out localId))
+            {
+                _repository.SaveWindowsPhoneSubscription(
+                    new List<FactID> { localId },
+                    deviceUri,
+                    clientGuid);
+            }
         }
 
-        public void WindowsUnsubscribe(
+        public void WindowsPhoneUnsubscribe(
             string domain,
-            FactTreeMemento pivotTree,
+            FactTreeMemento factTree,
             long pivotId,
             string deviceUri)
         {
-            throw new NotImplementedException();
+            Dictionary<FactID, FactID> localIdByRemoteId = ForEachFact(factTree,
+                fact => _repository.FindExistingFact(domain, fact));
+            FactID localId;
+            if (localIdByRemoteId.TryGetValue(new FactID { key = pivotId }, out localId))
+            {
+                _repository.DeleteWindowsPhoneSubscriptions(
+                    new List<FactID> { localId },
+                    deviceUri);
+            }
         }
 
         private static Dictionary<FactID, FactID> ForEachFact(FactTreeMemento tree, Func<FactMemento, FactID?> processFact)
@@ -186,7 +203,7 @@ namespace Correspondence.Distributor
             }
         }
 
-        private void Repository_PivotAffected(string domain, FactID pivotId)
+        private void Repository_PivotAffected(string domain, FactID pivotId, FactID factId, Guid clientGuid)
         {
             _messageBus.Notify(domain, pivotId);
         }

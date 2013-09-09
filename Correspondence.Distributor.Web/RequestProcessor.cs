@@ -29,8 +29,8 @@ namespace Correspondence.Distributor.Web
                 TryHandleAsync<PostRequest, PostResponse>(request, PostAsync) ??
                 TryHandleAsync<InterruptRequest, InterruptResponse>(request, InterruptAsync) ??
                 TryHandleAsync<NotifyRequest, NotifyResponse>(request, NotifyAsync) ??
-                TryHandleAsync<WindowsSubscribeRequest, WindowsSubscribeResponse>(request, WindowsSubscribeAsync) ??
-                TryHandleAsync<WindowsUnsubscribeRequest, WindowsUnsubscribeResponse>(request, WindowsUnsubscribeAsync);
+                TryHandleAsync<WindowsPhoneSubscribeRequest, WindowsPhoneSubscribeResponse>(request, WindowsPhoneSubscribeAsync) ??
+                TryHandleAsync<WindowsPhoneUnsubscribeRequest, WindowsPhoneUnsubscribeResponse>(request, WindowsPhoneUnsubscribeAsync);
             if (task == null)
                 throw new CorrespondenceException(String.Format("Unknown request type {0}.", request));
             BinaryResponse response = await task;
@@ -119,25 +119,25 @@ namespace Correspondence.Distributor.Web
             return new NotifyResponse();
         }
 
-        private async Task<WindowsSubscribeResponse> WindowsSubscribeAsync(WindowsSubscribeRequest request)
+        private async Task<WindowsPhoneSubscribeResponse> WindowsPhoneSubscribeAsync(WindowsPhoneSubscribeRequest request)
         {
-            _service.WindowsSubscribe(
+            _service.WindowsPhoneSubscribe(
                 request.ClientGuid,
                 request.Domain,
                 request.PivotTree,
                 request.PivotId,
                 request.DeviceUri);
-            return new WindowsSubscribeResponse();
+            return new WindowsPhoneSubscribeResponse();
         }
 
-        private async Task<WindowsUnsubscribeResponse> WindowsUnsubscribeAsync(WindowsUnsubscribeRequest request)
+        private async Task<WindowsPhoneUnsubscribeResponse> WindowsPhoneUnsubscribeAsync(WindowsPhoneUnsubscribeRequest request)
         {
-            _service.WindowsUnsubscribe(
+            _service.WindowsPhoneUnsubscribe(
                 request.Domain,
                 request.PivotTree,
                 request.PivotId,
                 request.DeviceUri);
-            return new WindowsUnsubscribeResponse();
+            return new WindowsPhoneUnsubscribeResponse();
         }
     }
 }

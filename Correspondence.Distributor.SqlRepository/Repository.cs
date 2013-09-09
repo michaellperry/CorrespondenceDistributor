@@ -111,7 +111,7 @@ namespace Correspondence.Distributor.SqlRepository
 
                         if (roleMessages.Any() && PivotAffected != null)
                             foreach (var roleMessage in roleMessages)
-                                PivotAffected(domain, roleMessage.Message.PivotId);
+                                PivotAffected(domain, roleMessage.Message.PivotId, roleMessage.Message.FactId, clientGuid);
                         return id;
                     }
                     else
@@ -151,6 +151,37 @@ namespace Correspondence.Distributor.SqlRepository
                     int roleId = SaveRole(procedures, unpublish.Role);
                     procedures.DeleteMessage(unpublish.MessageId, roleId);
                 }
+            }
+        }
+
+        public void SaveWindowsPhoneSubscription(
+            IEnumerable<FactID> pivotIds, 
+            string deviceUri, 
+            Guid clientGuid)
+        {
+            using (var procedures = new Procedures(new Session(_connectionString)))
+            {
+                int clientId = SaveClient(procedures, clientGuid);
+                procedures.InsertWindowsPhoneSubscriptions(pivotIds, deviceUri, clientId);
+            }
+        }
+
+        public List<WindowsPhoneSubscription> LoadWindowsPhoneSubscriptions(
+            IEnumerable<FactID> pivotIds,
+            Guid clientGuid)
+        {
+            using (var procedures = new Procedures(new Session(_connectionString)))
+            {
+                int clientId = SaveClient(procedures, clientGuid);
+                return procedures.GetWindowsPhoneSubscriptionsByPivot(pivotIds, clientId);
+            }
+        }
+
+        public void DeleteWindowsPhoneSubscriptions(IEnumerable<FactID> pivotIds, string deviceUri)
+        {
+            using (var procedures = new Procedures(new Session(_connectionString)))
+            {
+                procedures.DeleteWindowsPhoneSubscriptions(pivotIds, deviceUri);
             }
         }
 

@@ -90,7 +90,7 @@ namespace Correspondence.Distributor.Test
 
             if (affectedPivots != null && affectedPivots.Any() && PivotAffected != null)
                 foreach (var pivotId in affectedPivots)
-                    PivotAffected(domain, pivotId);
+                    PivotAffected(domain, pivotId, factId, clientGuid);
 
             return factId;
         }
@@ -124,5 +124,21 @@ namespace Correspondence.Distributor.Test
         }
 
         public event Delegates.PivotAffectedDelegate PivotAffected;
+
+
+        public void SaveWindowsPhoneSubscription(IEnumerable<FactID> pivotIds, string deviceUri, Guid clientGuid)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<WindowsPhoneSubscription> LoadWindowsPhoneSubscriptions(IEnumerable<FactID> pivotIds, Guid clientGuid)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DeleteWindowsPhoneSubscriptions(IEnumerable<FactID> pivotIds, string deviceUri)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
