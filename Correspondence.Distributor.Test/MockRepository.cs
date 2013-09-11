@@ -140,5 +140,10 @@ namespace Correspondence.Distributor.Test
         {
             throw new NotImplementedException();
         }
+
+        public void DeleteWindowsPhoneSubscriptionsByDeviceId(IEnumerable<string> deviceUris)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

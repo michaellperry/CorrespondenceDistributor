@@ -23,5 +23,7 @@ namespace Correspondence.Distributor
             Guid clientGuid);
         void DeleteWindowsPhoneSubscriptions(
             IEnumerable<FactID> pivotIds, string deviceUri);
+        void DeleteWindowsPhoneSubscriptionsByDeviceId(
+            IEnumerable<string> deviceUris);
     }
 }

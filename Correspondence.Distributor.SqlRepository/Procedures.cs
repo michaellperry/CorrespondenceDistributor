@@ -308,6 +308,18 @@ namespace Correspondence.Distributor.SqlRepository
             _session.Command.ExecuteNonQuery();
         }
 
+        public void DeleteWindowsPhoneSubscriptionsByDeviceId(IEnumerable<string> deviceUris)
+        {
+            string deviceUriGroup = string.Join(",", deviceUris
+                .Select(deviceUri => deviceUri)
+                .ToArray());
+            _session.Command.CommandText = string.Format(
+                "DELETE WindowsPhoneSubscription " +
+                "WHERE DeviceUri IN ({0})",
+                deviceUriGroup);
+            _session.Command.ExecuteNonQuery();
+        }
+
         private void AddParameter(string name, object value)
         {
             var param = _session.Command.CreateParameter();

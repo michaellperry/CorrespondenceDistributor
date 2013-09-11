@@ -11,11 +11,25 @@ using UpdateControls.Correspondence.Mementos;
 
 namespace Correspondence.Distributor.WindowsPhone
 {
-    public class Broker
+    public class Broker : IBroker
     {
  	    private const int RawNotificationSize = 1024;
 
-        public byte[] GetRawPayload(FactTreeMemento factTree)
+        public async Task<List<string>> SendPushNotifications(FactTreeMemento factTree, IEnumerable<string> subscriberDeviceUris)
+        {
+            var payload = GetRawPayload(factTree);
+            var tasks = subscriberDeviceUris
+                .Select(deviceUri => SendRawNotification(payload, deviceUri));
+            bool[] succeses = await Task.WhenAll(tasks);
+            var failedDeviceUris = subscriberDeviceUris
+                .Zip(succeses, (deviceUri, success) => new { deviceUri, success })
+                .Where(pair => !pair.success)
+                .Select(pair => pair.deviceUri)
+                .ToList();
+            return failedDeviceUris;
+        }
+
+        private byte[] GetRawPayload(FactTreeMemento factTree)
         {
             byte[] bytes = SerializeRawMessage(factTree);
 
@@ -27,7 +41,7 @@ namespace Correspondence.Distributor.WindowsPhone
             return bytes;
         }
 
-        public async Task<bool> SendRawNotification(
+        private async Task<bool> SendRawNotification(
             byte[] payload,
             string deviceUri)
         {

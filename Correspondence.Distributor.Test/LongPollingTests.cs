@@ -19,7 +19,7 @@ namespace Correspondence.Distributor.Test
         [TestInitialize]
         public void Initialize()
         {
-            _service = new DistributorService(_mockRepository);
+            _service = new DistributorService(_mockRepository, null);
         }
 
         [TestMethod]

@@ -99,6 +99,10 @@
       <Project>{a0d727f1-3409-4a84-a761-4c6da18915b1}</Project>
       <Name>Correspondence.Distributor.SqlRepository</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Correspondence.Distributor.WindowsPhone\Correspondence.Distributor.WindowsPhone.csproj">
+      <Project>{9be1590b-dda1-4e50-a78a-f7b7185a1795}</Project>
+      <Name>Correspondence.Distributor.WindowsPhone</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Correspondence.Distributor\Correspondence.Distributor.csproj">
       <Project>{f76ae044-785d-4612-98be-8feb4a4de4c5}</Project>
       <Name>Correspondence.Distributor</Name>

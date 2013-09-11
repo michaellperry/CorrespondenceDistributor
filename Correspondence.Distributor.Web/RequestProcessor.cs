@@ -14,9 +14,9 @@ namespace Correspondence.Distributor.Web
     {
         private DistributorService _service;
 
-        public RequestProcessor(IRepository repository)
+        public RequestProcessor(IRepository repository, IBroker windowsPhoneBroker)
         {
-            _service = new DistributorService(repository);
+            _service = new DistributorService(repository, windowsPhoneBroker);
         }
 
         public async Task<byte[]> PostAsync(Stream inputStream)

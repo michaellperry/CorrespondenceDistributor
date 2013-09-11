@@ -185,6 +185,14 @@ namespace Correspondence.Distributor.SqlRepository
             }
         }
 
+        public void DeleteWindowsPhoneSubscriptionsByDeviceId(IEnumerable<string> deviceUris)
+        {
+            using (var procedures = new Procedures(new Session(_connectionString)))
+            {
+                procedures.DeleteWindowsPhoneSubscriptionsByDeviceId(deviceUris);
+            }
+        }
+
         private bool FindExistingFact(FactMemento memento, out FactID id, Procedures procedures, bool readCommitted)
         {
             var existingFacts = FindExistingFacts(memento, procedures, readCommitted);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,11 +11,13 @@ namespace Correspondence.Distributor
     public class DistributorService
     {
         private readonly IRepository _repository;
+        private readonly IBroker _windowsPhoneBroker;
         private readonly MessageBus _messageBus;
 
-        public DistributorService(IRepository repository)
+        public DistributorService(IRepository repository, IBroker windowsPhoneBroker)
         {
             _repository = repository;
+            _windowsPhoneBroker = windowsPhoneBroker;
             _repository.PivotAffected += Repository_PivotAffected;
             _messageBus = new MessageBus();
         }
@@ -210,6 +213,29 @@ namespace Correspondence.Distributor
         private void Repository_PivotAffected(string domain, FactID pivotId, FactID factId, Guid clientGuid)
         {
             _messageBus.Notify(domain, pivotId);
+
+            var subscribers = _repository.LoadWindowsPhoneSubscriptions(new List<FactID> { pivotId }, clientGuid);
+            if (subscribers.Any())
+            {
+                var messageBody = new FactTreeMemento(0);
+                AddToFactTree(domain, messageBody, factId, null);
+                SendWindowsPhonePushNotifications(subscribers, messageBody);
+            }
+        }
+
+        private async void SendWindowsPhonePushNotifications(List<WindowsPhoneSubscription> subscribers, FactTreeMemento messageBody)
+        {
+            try
+            {
+                var devicesNotFound = await _windowsPhoneBroker.SendPushNotifications(
+                    messageBody,
+                    subscribers.Select(s => s.DeviceUri));
+                _repository.DeleteWindowsPhoneSubscriptionsByDeviceId(devicesNotFound);
+            }
+            catch (Exception x)
+            {
+                Trace.Fail(x.Message);
+            }
         }
     }
 }

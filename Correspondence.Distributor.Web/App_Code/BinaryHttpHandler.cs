@@ -18,7 +18,8 @@ namespace Correspondence.Distributor.Web
         static BinaryHttpHandler()
         {
             _requestProcessor = new RequestProcessor(new Repository("Correspondence")
-                .UpgradeDatabase());
+                .UpgradeDatabase(),
+                new Correspondence.Distributor.WindowsPhone.Broker());
         }
 
         public override bool IsReusable

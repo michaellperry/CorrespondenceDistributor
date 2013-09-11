@@ -54,6 +54,7 @@
     <Compile Include="Delegates.cs" />
     <Compile Include="DistributorService.cs" />
     <Compile Include="GetManyResult.cs" />
+    <Compile Include="IBroker.cs" />
     <Compile Include="IRepository.cs" />
     <Compile Include="MessageBus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
