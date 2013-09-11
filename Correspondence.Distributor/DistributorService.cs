@@ -9,8 +9,8 @@ namespace Correspondence.Distributor
 {
     public class DistributorService
     {
-        private IRepository _repository;
-        private MessageBus _messageBus;
+        private readonly IRepository _repository;
+        private readonly MessageBus _messageBus;
 
         public DistributorService(IRepository repository)
         {
@@ -30,7 +30,11 @@ namespace Correspondence.Distributor
             if (timeoutSeconds > 0 && !result.Tree.Facts.Any())
             {
                 CancellationTokenSource cancellation = new CancellationTokenSource();
-                _messageBus.Register(domain, result.LocalPivotIds, clientGuid, cancellation);
+                int session = _messageBus.Register(
+                    domain,
+                    result.LocalPivotIds,
+                    clientGuid,
+                    () => cancellation.Cancel());
                 return Task
                     .Delay(timeoutSeconds * 1000, cancellation.Token)
                     .ContinueWith(t => t.IsCanceled
@@ -38,7 +42,7 @@ namespace Correspondence.Distributor
                         : result)
                     .ContinueWith(t =>
                     {
-                        _messageBus.Unregister(cancellation);
+                        _messageBus.Unregister(session);
                         cancellation.Dispose();
                         return t.Result;
                     });
