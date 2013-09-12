@@ -46,6 +46,24 @@ namespace Correspondence.Distributor.BinaryHttp
             BinaryHelper.WriteByte(Token, requestWriter);
         }
     }
+    public class WindowsPhoneSubscribeResponse : BinaryResponse
+    {
+        public static byte Token = 3;
+
+        protected override void WriteInternal(BinaryWriter requestWriter)
+        {
+            BinaryHelper.WriteByte(Token, requestWriter);
+        }
+    }
+    public class WindowsPhoneUnsubscribeResponse : BinaryResponse
+    {
+        public static byte Token = 4;
+
+        protected override void WriteInternal(BinaryWriter requestWriter)
+        {
+            BinaryHelper.WriteByte(Token, requestWriter);
+        }
+    }
     public class InterruptResponse : BinaryResponse
     {
         public static byte Token = 5;
@@ -58,24 +76,6 @@ namespace Correspondence.Distributor.BinaryHttp
     public class NotifyResponse : BinaryResponse
     {
         public static byte Token = 6;
-
-        protected override void WriteInternal(BinaryWriter requestWriter)
-        {
-            BinaryHelper.WriteByte(Token, requestWriter);
-        }
-    }
-    public class WindowsPhoneSubscribeResponse : BinaryResponse
-    {
-        public static byte Token = 7;
-
-        protected override void WriteInternal(BinaryWriter requestWriter)
-        {
-            BinaryHelper.WriteByte(Token, requestWriter);
-        }
-    }
-    public class WindowsPhoneUnsubscribeResponse : BinaryResponse
-    {
-        public static byte Token = 8;
 
         protected override void WriteInternal(BinaryWriter requestWriter)
         {

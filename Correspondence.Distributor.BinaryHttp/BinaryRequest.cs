@@ -116,6 +116,54 @@ namespace Correspondence.Distributor.BinaryHttp
             }
         }
     }
+    public class WindowsPhoneSubscribeRequest : BinaryRequest
+    {
+        public static byte Token = 3;
+
+        public FactTreeMemento PivotTree { get; set; }
+        public long PivotId { get; set; }
+        public string DeviceUri { get; set; }
+        public Guid ClientGuid { get; set; }
+
+        public static WindowsPhoneSubscribeRequest CreateAndRead(string domain, BinaryReader requestReader)
+        {
+            WindowsPhoneSubscribeRequest request = new WindowsPhoneSubscribeRequest();
+            request.ReadInternal(domain, requestReader);
+            return request;
+        }
+
+        public void ReadInternal(string domain, BinaryReader requestReader)
+        {
+            Domain = domain;
+            PivotTree = new FactTreeSerializer().DeserializeFactTree(requestReader);
+            PivotId = BinaryHelper.ReadLong(requestReader);
+            DeviceUri = BinaryHelper.ReadString(requestReader);
+            ClientGuid = Guid.Parse(BinaryHelper.ReadString(requestReader));
+        }
+    }
+    public class WindowsPhoneUnsubscribeRequest : BinaryRequest
+    {
+        public static byte Token = 4;
+
+        public FactTreeMemento PivotTree { get; set; }
+        public long PivotId { get; set; }
+        public string DeviceUri { get; set; }
+
+        public static WindowsPhoneUnsubscribeRequest CreateAndRead(string domain, BinaryReader requestReader)
+        {
+            WindowsPhoneUnsubscribeRequest request = new WindowsPhoneUnsubscribeRequest();
+            request.ReadInternal(domain, requestReader);
+            return request;
+        }
+
+        public void ReadInternal(string domain, BinaryReader requestReader)
+        {
+            Domain = domain;
+            PivotTree = new FactTreeSerializer().DeserializeFactTree(requestReader);
+            PivotId = BinaryHelper.ReadLong(requestReader);
+            DeviceUri = BinaryHelper.ReadString(requestReader);
+        }
+    }
     public class InterruptRequest : BinaryRequest
     {
         public static byte Token = 5;
@@ -160,54 +208,6 @@ namespace Correspondence.Distributor.BinaryHttp
             ClientGuid = Guid.Parse(BinaryHelper.ReadString(requestReader));
             Text1 = BinaryHelper.ReadString(requestReader);
             Text2 = BinaryHelper.ReadString(requestReader);
-        }
-    }
-    public class WindowsPhoneSubscribeRequest : BinaryRequest
-    {
-        public static byte Token = 7;
-
-        public FactTreeMemento PivotTree { get; set; }
-        public long PivotId { get; set; }
-        public string DeviceUri { get; set; }
-        public Guid ClientGuid { get; set; }
-
-        public static WindowsPhoneSubscribeRequest CreateAndRead(string domain, BinaryReader requestReader)
-        {
-            WindowsPhoneSubscribeRequest request = new WindowsPhoneSubscribeRequest();
-            request.ReadInternal(domain, requestReader);
-            return request;
-        }
-
-        public void ReadInternal(string domain, BinaryReader requestReader)
-        {
-            Domain = domain;
-            PivotTree = new FactTreeSerializer().DeserializeFactTree(requestReader);
-            PivotId = BinaryHelper.ReadLong(requestReader);
-            DeviceUri = BinaryHelper.ReadString(requestReader);
-            ClientGuid = Guid.Parse(BinaryHelper.ReadString(requestReader));
-        }
-    }
-    public class WindowsPhoneUnsubscribeRequest : BinaryRequest
-    {
-        public static byte Token = 8;
-
-        public FactTreeMemento PivotTree { get; set; }
-        public long PivotId { get; set; }
-        public string DeviceUri { get; set; }
-
-        public static WindowsPhoneUnsubscribeRequest CreateAndRead(string domain, BinaryReader requestReader)
-        {
-            WindowsPhoneUnsubscribeRequest request = new WindowsPhoneUnsubscribeRequest();
-            request.ReadInternal(domain, requestReader);
-            return request;
-        }
-
-        public void ReadInternal(string domain, BinaryReader requestReader)
-        {
-            Domain = domain;
-            PivotTree = new FactTreeSerializer().DeserializeFactTree(requestReader);
-            PivotId = BinaryHelper.ReadLong(requestReader);
-            DeviceUri = BinaryHelper.ReadString(requestReader);
         }
     }
 }
