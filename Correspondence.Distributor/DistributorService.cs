@@ -127,7 +127,19 @@ namespace Correspondence.Distributor
             string text1,
             string text2)
         {
-            throw new NotImplementedException();
+            Dictionary<FactID, FactID> localIdByRemoteId = ForEachFact(pivotTree, fact =>
+                _repository.FindExistingFact(domain, fact));
+            FactID localPivotId;
+            if (localIdByRemoteId.TryGetValue(new FactID { key = pivotId }, out localPivotId))
+            {
+                var subscribers = _repository.LoadWindowsPhoneSubscriptions(
+                    new List<FactID> { localPivotId },
+                    clientGuid);
+                if (subscribers.Any())
+                {
+                    SendWindowsPhoneToastNotifications(subscribers, text1, text2);
+                }
+            }
         }
 
         public void WindowsPhoneSubscribe(
@@ -223,12 +235,33 @@ namespace Correspondence.Distributor
             }
         }
 
-        private async void SendWindowsPhonePushNotifications(List<WindowsPhoneSubscription> subscribers, FactTreeMemento messageBody)
+        private async void SendWindowsPhonePushNotifications(
+            List<WindowsPhoneSubscription> subscribers,
+            FactTreeMemento messageBody)
         {
             try
             {
                 var devicesNotFound = await _windowsPhoneBroker.SendPushNotifications(
                     messageBody,
+                    subscribers.Select(s => s.DeviceUri));
+                _repository.DeleteWindowsPhoneSubscriptionsByDeviceId(devicesNotFound);
+            }
+            catch (Exception x)
+            {
+                Trace.Fail(x.Message);
+            }
+        }
+
+        private async void SendWindowsPhoneToastNotifications(
+            List<WindowsPhoneSubscription> subscribers, 
+            string text1, 
+            string text2)
+        {
+            try
+            {
+                var devicesNotFound = await _windowsPhoneBroker.SendToastNotifications(
+                    text1,
+                    text2,
                     subscribers.Select(s => s.DeviceUri));
                 _repository.DeleteWindowsPhoneSubscriptionsByDeviceId(devicesNotFound);
             }
