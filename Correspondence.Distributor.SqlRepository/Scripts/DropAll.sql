@@ -12,3 +12,5 @@ drop table client
 GO
 drop table Correspondence_Version
 GO
+drop table WindowsPhoneSubscription
+GO
