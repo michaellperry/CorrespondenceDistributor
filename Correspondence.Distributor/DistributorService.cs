@@ -181,16 +181,24 @@ namespace Correspondence.Distributor
         private static Dictionary<FactID, FactID> ForEachFact(FactTreeMemento tree, Func<FactMemento, FactID?> processFact)
         {
             Dictionary<FactID, FactID> localIdByRemoteId = new Dictionary<FactID, FactID>();
-            foreach (IdentifiedFactMemento identifiedFact in tree.Facts)
+            foreach (IdentifiedFactBase identifiedFact in tree.Facts)
             {
-                FactMemento translatedMemento = TranslateMemento(localIdByRemoteId, identifiedFact);
-                if (translatedMemento != null)
+                if (identifiedFact is IdentifiedFactMemento)
                 {
-                    FactID? localId = processFact(translatedMemento);
-                    if (localId != null)
+                    FactMemento translatedMemento = TranslateMemento(localIdByRemoteId, (IdentifiedFactMemento)identifiedFact);
+                    if (translatedMemento != null)
                     {
-                        localIdByRemoteId.Add(identifiedFact.Id, localId.Value);
+                        FactID? localId = processFact(translatedMemento);
+                        if (localId != null)
+                        {
+                            localIdByRemoteId.Add(identifiedFact.Id, localId.Value);
+                        }
                     }
+                }
+                else if (identifiedFact is IdentifiedFactRemote)
+                {
+                    localIdByRemoteId.Add(identifiedFact.Id,
+                        ((IdentifiedFactRemote)identifiedFact).RemoteId);
                 }
             }
             return localIdByRemoteId;
